@@ -151,25 +151,57 @@ class PDODatabaseConnection extends Database\IDatabaseConnection
 		return $this->pdo->commit() ? true : false;
 	}
 
-	
+	/**
+	 * Returns the hostname of the database server that this connection is associated with.
+	 *
+	 * @access public
+	 * @return string 		The hostname of the database server
+	 */
 	public function getHost() {
 		return $this->host;
 	}
 
+	/**
+	 * Returns the username of the database server that this connection used to connect with.
+	 *
+	 * @access public
+	 * @return string 		The username of the database server credentials
+	 */
 	public function getUser() {
 		return $this->user;
 	}
 
+	/**
+	 * Returns the password of the database server that this connection used to connect with.
+	 *
+	 * @access public
+	 * @return string 		The password of the database server credentials
+	 */
 	public function getPass() {
 		return $this->pass;
 	}
 
+	/**
+	 * Returns the database name that the connection is currently associated with.
+	 *
+	 * @access public
+	 * @return string 		The database name
+	 */
 	public function getDbName() {
 		return $this->dbName;
 	}
 
-	// 
-	function query($sql, array $args = array());
+	/**
+	 * Executes an arbitrary SQL query on the database server and returns the result if any.
+	 * 
+	 * @access public
+	 * @param $sql 			The SQL string
+	 * @param $args 		Arguments that need to be bound to the query
+	 * @return IResultSet
+	 */
+	public function query($sql, array $args = array()) {
+
+	}
 
 	/**
 	 * Sets the dsn string that will be used when the pdo object is constructed.
