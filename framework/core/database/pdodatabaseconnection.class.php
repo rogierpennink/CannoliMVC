@@ -198,9 +198,10 @@ class PDODatabaseConnection extends Database\IDatabaseConnection
 	 * @param $sql 			The SQL string
 	 * @param $args 		Arguments that need to be bound to the query
 	 * @return IResultSet
+	 * @throws DatabaseNotConnectedException
 	 */
 	public function query($sql, array $args = array()) {
-
+		$this->checkIfConnected();
 	}
 
 	/**
