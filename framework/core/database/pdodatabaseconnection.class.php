@@ -4,6 +4,15 @@ namespace Cannoli\Framework\Core\Database;
 use Cannoli\Framework\Core\Exception,
 	Cannoli\Framework\Core\Plugin\Contracts\Database;
 
+/**
+ * A default implementation of the IDatabaseConnection interface. Database
+ * plugins may use this as a base class for database-specific implementations.
+ *
+ * @package Cannoli
+ * @subpackage Framework\Core\Database
+ * @author Rogier Pennink
+ * @category Database
+ */
 class PDODatabaseConnection extends Database\IDatabaseConnection
 {
 	private $dsn;
@@ -202,6 +211,42 @@ class PDODatabaseConnection extends Database\IDatabaseConnection
 	 */
 	public function query($sql, array $args = array()) {
 		$this->checkIfConnected();
+
+		// Default value
+		$stmt = false;
+
+		try {
+			$stmt = $this->pdo->prepare($sql);
+		}
+		catch ( \PDOException $e ) {
+			$message = "Could not prepare query: ". $e->getMessage() ." (". $e->getCode() .")";
+			throw new Exception\Database\DatabaseQueryException($message, $sql, $args);
+		}
+
+		if ( $stmt === false ) {
+			$errorInfo = $this->pdo->getErrorInfo();
+			if ( is_null($errorInfo[1]) )
+				$message = "Could not prepare query, but no error code was set.";
+			else
+				$message = "Could not prepare query: ". $errorInfo[2] ." (". $errorInfo[1] .")";
+			throw new Exception\Database\DatabaseQueryException($message, $sql, $args);
+		}
+
+		return $this->createResultSetFromPDOStatement($stmt, $args);
+	}
+
+	/**
+	 * Creates an IResultSet instance using the PDOStatement object created by the call to PDO::prepare.
+	 * Child classes can override this method should they wish to implement a different IResultSet
+	 * implementation without replacing the whole PDODatabaseConnection::query method.
+	 *
+	 * @access protected
+	 * @param $stmt 		A valid PDOStatement instance
+	 * @param $queryArgs 	The parameters that need to be bound to the statement
+	 * @return IResultSet
+	 */
+	protected function createResultSetFromPDOStatement(\PDOStatement &$stmt, array $queryArgs) {
+
 	}
 
 	/**
