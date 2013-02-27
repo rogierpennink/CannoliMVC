@@ -69,12 +69,17 @@ class PDODatabaseConnection extends Database\IDatabaseConnection
 		}
 
 		try {
-			$this->pdo = new PDO($this->dsn);
+			$this->pdo = new PDO($this->dsn, $user, $pass);
 		}
 		catch (\PDOException $e) {
 			$message = "An internal error occurred during the connection attempt: ". $e->getMessage() ." (". $e->getCode() .")";
 			throw new Exception\Database\DatabaseConnectionException($message, $host, $user, $pass, $dbName);
 		}
+
+		$this->user = $user;
+		$this->pass = $pass;
+		$this->dbName = $dbname;
+		$this->host = $host;
 
 		$this->isConnected = true;
 	}
