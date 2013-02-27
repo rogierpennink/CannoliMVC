@@ -89,6 +89,7 @@ class PDOResultSet implements Database\IResultSet
 		}
 
 		// Bind params
+		$this->bindParams();
 	}
 
 	/**
