@@ -62,6 +62,9 @@ class Application extends Utility\ConfigurableSingleton
 		$this->session = new Core\Session\SessionCache();
 		$this->router = new Router($this);
 		$this->router->setDefaultController($this->config("Cannoli.Framework.Controller", "defaultController", ""));
+		if ( ($defaultController = $this->config("Cannoli.Application.Controller", "defaultController", "")) != "" ) {
+			$this->router->setDefaultController($defaultController);
+		}
 	}
 
 	/**
