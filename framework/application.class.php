@@ -61,6 +61,7 @@ class Application extends Utility\ConfigurableSingleton
 		
 		$this->session = new Core\Session\SessionCache();
 		$this->router = new Router($this);
+		$this->router->setDefaultController($this->config("Cannoli.Framework.Controller", "defaultController", ""));
 	}
 
 	/**
@@ -75,9 +76,11 @@ class Application extends Utility\ConfigurableSingleton
 	public function getConfigurationDomains() {
 		return array(
 			"Cannoli.Framework.Autoload",
+			"Cannoli.Framework.Controller",
 			"Cannoli.Framework.Plugins",
 			"Cannoli.Framework.Ioc",
 			"Cannoli.Application.Ioc",
+			"Cannoli.Application.Controller",
 			"Cannoli.Application.Autoload"
 		);
 	}
@@ -212,7 +215,7 @@ class Application extends Utility\ConfigurableSingleton
 	 * @return object 			The Pluginmanager instance.
 	 */
 	public function &getPluginManager() {
-		return Plugin\PluginManager::getInstance();
+		return $this->getIocContainer()->getInstance("Cannoli\Framework\Core\Plugin\PluginManager");
 	}
 
 	/**

@@ -7,10 +7,14 @@ use Cannoli\Framework\Application,
 class SystemModule extends BindingModule
 {
 	public function load() {
-		// Bind application
-		$this->bind("Cannoli\Framework\Application")->to(function() {
+		$this->setNamespace("Cannoli\Framework");
+
+		$this->bind("Application")->to(function() {
 			return Application::getInstance();
 		})->inSingletonScope();
+
+		$this->setNamespace("Cannoli\Framework\Core\Plugin");
+		$this->bind("PluginManager")->to("PluginManager")->inSingletonScope();
 	}
 }
 ?>
