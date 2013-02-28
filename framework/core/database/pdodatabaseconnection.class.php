@@ -13,11 +13,11 @@ use Cannoli\Framework\Core\Exception,
  * @author Rogier Pennink
  * @category Database
  */
-class PDODatabaseConnection extends Database\IDatabaseConnection
+abstract class PDODatabaseConnection implements Database\IDatabaseConnection
 {
-	private $dsn;
+	protected $pdo;
 
-	private $pdo;
+	private $dsn;
 
 	private $isConnected;
 
@@ -69,7 +69,10 @@ class PDODatabaseConnection extends Database\IDatabaseConnection
 		}
 
 		try {
-			$this->pdo = new PDO($this->dsn, $user, $pass);
+			$this->pdo = new \PDO($this->dsn, $user, $pass);
+			// Exception errormode is necessary to prevent certain warnings
+			$this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+			$this->pdo->setAttribute(\PDO::ATTR_CURSOR, \PDO::CURSOR_SCROLL);
 		}
 		catch (\PDOException $e) {
 			$message = "An internal error occurred during the connection attempt: ". $e->getMessage() ." (". $e->getCode() .")";
@@ -78,7 +81,7 @@ class PDODatabaseConnection extends Database\IDatabaseConnection
 
 		$this->user = $user;
 		$this->pass = $pass;
-		$this->dbName = $dbname;
+		$this->dbName = $dbName;
 		$this->host = $host;
 
 		$this->isConnected = true;
@@ -217,27 +220,9 @@ class PDODatabaseConnection extends Database\IDatabaseConnection
 	public function query($sql, array $args = array()) {
 		$this->checkIfConnected();
 
-		// Default value
-		$stmt = false;
-
-		try {
-			$stmt = $this->pdo->prepare($sql);
-		}
-		catch ( \PDOException $e ) {
-			$message = "Could not prepare query: ". $e->getMessage() ." (". $e->getCode() .")";
-			throw new Exception\Database\DatabaseQueryException($message, $sql, $args);
-		}
-
-		if ( $stmt === false ) {
-			$errorInfo = $this->pdo->getErrorInfo();
-			if ( is_null($errorInfo[1]) )
-				$message = "Could not prepare query, but no error code was set.";
-			else
-				$message = "Could not prepare query: ". $errorInfo[2] ." (". $errorInfo[1] .")";
-			throw new Exception\Database\DatabaseQueryException($message, $sql, $args);
-		}
-
-		return $this->createResultSetFromPDOStatement($stmt, $args);
+		$resultSet = $this->createResultSetFromQuery($sql, $args);
+		$resultSet->execute();
+		return $resultSet;
 	}
 
 	/**
@@ -250,8 +235,10 @@ class PDODatabaseConnection extends Database\IDatabaseConnection
 	 * @param $queryArgs 	The parameters that need to be bound to the statement
 	 * @return IResultSet
 	 */
-	protected function createResultSetFromPDOStatement(\PDOStatement &$stmt, array $queryArgs) {
+	protected function createResultSetFromQuery($sql, array $queryArgs) {
+		$resultSet = new PDOResultSet($this->pdo, $sql, $queryArgs);
 
+		return $resultSet;
 	}
 
 	/**

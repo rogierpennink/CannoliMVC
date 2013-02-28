@@ -1,5 +1,5 @@
 <?php
-namespace Cannoli\Framework\Plugin\CannoliMySQL;
+namespace Cannoli\Framework\Plugin\CannoliMySQLPDO;
 
 use Cannoli\Framework\Core\Database;
 
@@ -12,7 +12,7 @@ use Cannoli\Framework\Core\Database;
  * @author Rogier Pennink
  * @category Database
  */
-class MySQLDatabaseConnection extends Database\PDODatabaseConnection
+class MySQLPDODatabaseConnection extends Database\PDODatabaseConnection
 {
 	/**
 	 * Initiates a connection with the target database server, using the specified
@@ -31,6 +31,22 @@ class MySQLDatabaseConnection extends Database\PDODatabaseConnection
 	public function connect($host, $user, $pass, $dbName) {
 		$this->setDSN("mysql:host=".$host.";dbname=".$dbName);
 		return parent::connect($host, $user, $pass, $dbName);
+	}
+
+	/**
+	 * Overrides the creation of a new IResultSet instance so that we can make use
+	 * of MySQLPDOResultSet which will throw exceptions for certain unsupported
+	 * method calls.
+	 *
+	 * @access protected
+	 * @param $sql  		A valid mysql query
+	 * @param $queryArgs 	The parameters that need to be bound to the statement
+	 * @return IResultSet
+	 */
+	protected function createResultSetFromQuery($sql, array $queryArgs) {
+		$resultSet = new MySQLPDOResultSet($this->pdo, $sql, $queryArgs);
+
+		return $resultSet;
 	}
 }
 ?>

@@ -18,6 +18,8 @@ interface IResultSet
 	// Data fetch
 	function fetchObject();
 	function fetchAssoc();
+	function fetchAllAsObject();
+	function fetchAllAsAssoc();
 
 	// Cursor management
 	function seek($pos);
