@@ -9,6 +9,7 @@ interface IDatabaseConnection
 	function isConnected();
 
 	// Transactions
+	function isInTransaction();
 	function transactionStart();
 	function transactionRollback();
 	function transactionCommit();
@@ -17,6 +18,7 @@ interface IDatabaseConnection
 	function getHost();
 	function getUser();
 	function getPass();
+	function getDbName();
 
 	// 
 	function query($sql, array $args = array());
