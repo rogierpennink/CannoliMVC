@@ -18,7 +18,7 @@ class Router
 		$this->app = $app;
 		
 		/* Set default controller and methods to their default values. */
-		$this->defaultController = "";
+		$this->defaultController = "Cannoli";
 		$this->defaultMethod = "index";
 		
 		$this->paths = array();
@@ -51,11 +51,16 @@ class Router
 		/* Update the controller class name. */
 		if ( $strController == "" || ($controller = $this->getController("Application\\Controller\\". ucfirst($strController) ."Controller")) == null ) {
 			/* Fetch the default controller */
-			if ( $this->defaultController == "" || ($controller = $this->getController("Application\\Controller\\". ucfirst($this->defaultController) ."Controller")) == null ) {
+			if ( $this->defaultController == "" ) {
 				/* Fetch the controller base class. */
 				$controller = $this->getController("Cannoli\\Framework\\Controller\\Controller");
 				if ( empty($controller) ) {
 					/* Could not find default controller, check configuration. */
+					throw new Exception\RouteException("No Controller could be found, check your configuration!");
+				}
+			}
+			elseif ( ($controller = $this->getController("Application\\Controller\\". ucfirst($this->defaultController) ."Controller")) == null ) {
+				if ( ($controller = $this->getController("Cannoli\\Framework\\Controller\\". ucfirst($this->defaultController) ."Controller")) == null ) {
 					throw new Exception\RouteException("No Controller could be found, check your configuration!");
 				}
 			}
@@ -105,6 +110,8 @@ class Router
 		if ( class_exists($strController) ) {
 			//$controller = new $strController($this->app);
 			$controller = $this->app->getIocContainer()->getInstance($strController);
+			// This is where application-level initialization should occur
+			$controller->initialize();
 			
 			/* Check that the controller is an instance of Controller. */
 			if ( !($controller instanceof BaseController) )

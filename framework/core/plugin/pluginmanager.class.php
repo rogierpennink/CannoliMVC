@@ -21,7 +21,7 @@ use Cannoli\Framework\Application,
  * @author Rogier Pennink
  * @category Plugin
  */
-class PluginManager extends Utility\ConfigurableSingleton
+class PluginManager extends Utility\ConfigurableClass
 {
 	private static $configDomain = "Cannoli.Framework.Core.Plugin.PluginManager";
 
@@ -31,11 +31,17 @@ class PluginManager extends Utility\ConfigurableSingleton
 
 	private $configurationManager;
 
-	protected function __construct() {
+	private $app;
+
+	/**
+	 * Since PluginManager should only be created by the IoC Container, we
+	 * assume that the constructor's parameters will be injected.
+	 */
+	public function __construct(Application &$app) {
 		parent::__construct();
 
 		// TODO: Preferably, this is injected rather than requested...
-		$this->configurationManager =& Configuration\ConfigurationManager::getInstance();
+		$this->configurationManager =& $app->getConfigurationManager();
 		$this->configurationManager->registerConfigurable($this);
 	}
 
@@ -72,6 +78,11 @@ class PluginManager extends Utility\ConfigurableSingleton
 
 		// Plugin was found to be valid so we add it to our internal list
 		$this->plugins[$pluginContainer->getId()] = $pluginContainer;
+
+		// Now that the plugin has been successfully registered, we can add the configuration sections
+		foreach ( $pluginContainer->getConfigurations() as $configuration ) {
+			$this->configurationManager->register($configuration);
+		}
 
 		// Notify the plugin that it has been registered successfully
 		$pluginContainer->getInstance()->onRegistrationComplete();

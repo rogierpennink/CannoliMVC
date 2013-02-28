@@ -61,7 +61,7 @@ class IocContainer
 				try {
 					$rc = new \ReflectionClass($typeName);
 					if ( !$rc->isInstantiable() ) {
-						throw new Exception\Ioc\IocResolveException("Requested typeName is not instantiable.", $typeName);
+						throw new Exception\Ioc\IocResolveException("Unbound typeName ($typeName) is not instantiable.", $typeName);
 					}
 				}
 				catch (\ReflectionException $e) {

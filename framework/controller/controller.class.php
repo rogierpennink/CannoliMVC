@@ -40,5 +40,8 @@ abstract class Controller
 	public function http_500() {
 		return new View\View("framework/view/controller/500.view.php");
 	}
+
+	public function initialize() {
+	}
 }
 ?>
