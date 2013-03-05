@@ -1,5 +1,5 @@
 <?php
-namespace Cannoli\Framework\Core\Plugin\Contracts\Database;
+namespace Cannoli\Framework\Contract\Database;
 
 interface IDatabaseConnectionManager
 {
