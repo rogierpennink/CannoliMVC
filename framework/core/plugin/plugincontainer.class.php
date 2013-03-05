@@ -58,6 +58,21 @@ class PluginContainer
 	}
 
 	/**
+	 * Triggers the requested event method on the plugin instance. If no instance
+	 * can be constructed, this method fails silently.
+	 *
+	 * @access public
+	 * @param $event 		The name of the event method
+	 * @param $args 		The optional parameters to pass to the event method
+	 * @return mixed 		Passes the event method's output back to caller
+	 */
+	public function trigger($event, array $args = array()) {
+		if ( ($inst = $this->getInstance()) == null ) return;
+
+		// TODO: IMPORTANT!
+	}
+
+	/**
 	 * Returns the instantiated PluginBase-derived class
 	 * 
 	 * If the plugin instance has not yet been loaded, this method will create it.
@@ -68,6 +83,7 @@ class PluginContainer
 	 * @return object 		The plugin's class instance
 	 */
 	public function &getInstance() {
+		if ( $this->getClass() == null ) return null;
 		$callable = array($this->getClass(), "getInstance");
 		if ( ($instance = call_user_func($callable)) === false ) {
 			throw new Exception\Plugin\PluginClassLoaderException("Failed call to \"". $this->getClass() ."::getInstance()\"");

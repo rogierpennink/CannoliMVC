@@ -40,6 +40,8 @@ class PluginManager extends Utility\ConfigurableClass
 	public function __construct(Application &$app) {
 		parent::__construct();
 
+		$this->app = $app;
+
 		// TODO: Preferably, this is injected rather than requested...
 		$this->configurationManager =& $app->getConfigurationManager();
 		$this->configurationManager->registerConfigurable($this);
@@ -81,11 +83,12 @@ class PluginManager extends Utility\ConfigurableClass
 
 		// Now that the plugin has been successfully registered, we can add the configuration sections
 		foreach ( $pluginContainer->getConfigurations() as $configuration ) {
-			$this->configurationManager->register($configuration);
+			$this->configurationManager->registerConfiguration($configuration);
 		}
 
 		// Notify the plugin that it has been registered successfully
-		$pluginContainer->getInstance()->onRegistrationComplete();
+		//$pluginContainer->getInstance()->onRegistrationComplete();
+		$pluginContainer->trigger("onRegistrationComplete");
 	}
 
 	/**
@@ -146,7 +149,7 @@ class PluginManager extends Utility\ConfigurableClass
 		// to be notified of this request or not
 		// This is true for all plugin events
 		foreach ( $this->plugins as $pluginContainer ) {
-			$pluginContainer->getInstance()->onBeforeRouting();
+			$pluginContainer->trigger("onBeforeRouting");
 		}
 	}
 
@@ -162,7 +165,7 @@ class PluginManager extends Utility\ConfigurableClass
 		$viewCollection = new View\ViewCollection();
 
 		foreach ( $this->plugins as $pluginContainer ) {
-			$newRenderable = $pluginContainer->getInstance()->onAfterRouting($renderable);
+			$newRenderable = $pluginContainer->trigger("onAfterRouting", array($renderable));
 			if ( !($newRenderable instanceof Core\IRenderable) ) {
 				throw new \UnexpectedValueException("Return value for onAfterRouting on plugin: \"{$pluginContainer->getId()}\" must be of type IRenderable.");
 			}
@@ -187,7 +190,7 @@ class PluginManager extends Utility\ConfigurableClass
 		$config = $this->loadPluginConfiguration($path);
 
 		// If no error occurred, the path must be valid so add to autoload directories
-		Application::getInstance()->addAutoloadDirectory($path);
+		$this->app->addAutoloadDirectory($path);
 
 		// Attempt to construct a PluginContainer. If construction of the container
 		// is successful we can proceed querying it for information from the config
@@ -241,8 +244,9 @@ class PluginManager extends Utility\ConfigurableClass
 	 * 
 	 */
 	protected function validatePlugin(PluginContainer &$pluginContainer) {
+		$pluginInst = $pluginContainer->getInstance();
 		// No matter what, the plugin needs to inherit from PluginBase
-		if ( !($pluginContainer->getInstance() instanceof PluginBase) ) {
+		if ( $pluginInst != null && !($pluginInst instanceof PluginBase) ) {
 			throw new Exception\Plugin\PluginRegistrationException("Plugin class must inherit from Cannoli\\Framework\\Core\\Plugin\\PluginBase.");
 		}
 
@@ -279,13 +283,9 @@ class PluginManager extends Utility\ConfigurableClass
 			// Using reflection we can test if the declared class actually
 			// implements the contract, without having to instantiate it.
 			$rc = new \ReflectionClass($declaration->getClass());
-			// TODO: this is ugly, we need a generic way to strip namespaces from class names
-			$iNames = array_map(function($el) {
-				$parts = explode("\\", $el);
-				return $parts[count($parts) - 1];
-			}, $rc->getInterfaceNames());
-			
-			if ( !in_array($declaration->getContract(), $iNames) ) {
+
+			// TODO: See if there's some way to do this without hard-coding the contract namespace here
+			if ( !in_array("Cannoli\\Framework\\Contract\\".$declaration->getContract(), $rc->getInterfaceNames()) ) {
 				return false;
 			}
 		}
