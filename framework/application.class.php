@@ -418,10 +418,5 @@ class Application extends Utility\ConfigurableSingleton
 
 		$this->addAutoloadDirectory(PATH_SYSTEM."/core/utility");
 	}
-
-	private function initDatabaseConnection() {
-		$dbcManager = $this->getDatabaseConnectionManager();
-		
-	}
 }
 ?>

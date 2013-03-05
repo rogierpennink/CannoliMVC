@@ -109,8 +109,8 @@ class PluginContainer
 
 	private function validateAndUpdateDomain($domain) {
 		// Regular expressions for validation
-		$idRegex = "/^[a-zA-Z_]+[a-zA-Z0-9_]+$/";
-		$nameRegex = "/^[a-zA-Z0-9\s_\-\.,;\:]{3,30}$/";
+		$idRegex = "/^[a-zA-Z_]+[a-zA-Z0-9_\.\-]+$/";
+		$nameRegex = "/^[a-zA-Z0-9\s_\-\.,;\:]{3,50}$/";
 
 		if ( empty($domain->id) || !preg_match($idRegex, $domain->id) ) {
 			throw new Exception\Plugin\PluginBadConfigurationException("Invalid domain id (Regex: $idRegex).");
