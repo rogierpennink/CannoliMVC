@@ -88,7 +88,9 @@ class PluginManager extends Utility\ConfigurableClass
 
 		// Notify the plugin that it has been registered successfully
 		//$pluginContainer->getInstance()->onRegistrationComplete();
-		$pluginContainer->trigger("onRegistrationComplete");
+		if ( $pluginContainer->isInstantiable() ) {
+			$pluginContainer->trigger("onRegistrationComplete");	
+		}
 	}
 
 	/**
@@ -103,7 +105,9 @@ class PluginManager extends Utility\ConfigurableClass
 			throw new Exception\Plugin\PluginRemoveException("Plugin with id \"$key\" was not found and cannot be removed.");
 		}
 
-		$this->plugins[$key]->getInstance()->onRegistrationUndone();
+		if ( $this->plugins[$key]->isInstantiable() ) {
+			$this->plugins[$key]->getInstance()->onRegistrationUndone();
+		}
 
 		unset($this->plugins[$key]);
 	}
@@ -113,12 +117,12 @@ class PluginManager extends Utility\ConfigurableClass
 	 * declarations that match the requested contract.
 	 * 
 	 * @access public
-	 * @param string 			The contract for which to search plugins
-	 * @return PluginContainer 	The requested PluginContainer, or false if no plugin
-	 * 							for the requested contract could be found.
+	 * @param $contract 					The contract for which to search plugins
+	 * @return PluginDeclarationResolver	The requested PluginDeclarationResolver, or false if no plugin
+	 * 										for the requested contract could be found.
 	 * @throws PluginConflictException
 	 */
-	public function getByContract($contract) {
+	public function getDeclaration($contract) {
 		$requestedPluginContainer = false;
 
 		foreach ( $this->plugins as $key => &$pluginContainer ) {
@@ -130,6 +134,7 @@ class PluginManager extends Utility\ConfigurableClass
 					}
 
 					$requestedPluginContainer = $pluginContainer;
+					$requestedDeclaration = $declaration;
 				}
 			}
 		}
@@ -148,7 +153,7 @@ class PluginManager extends Utility\ConfigurableClass
 		// TODO: need some way of allowing plugins to specify whether they want
 		// to be notified of this request or not
 		// This is true for all plugin events
-		foreach ( $this->plugins as $pluginContainer ) {
+		foreach ( $this->getInstantiablePlugins() as $pluginContainer ) {
 			$pluginContainer->trigger("onBeforeRouting");
 		}
 	}
@@ -187,7 +192,7 @@ class PluginManager extends Utility\ConfigurableClass
 	 */
 	public function getInstantiablePlugins() {
 		return array_filter($this->plugins, function($el) {
-			return !is_null($el->getClass());
+			return $el->isInstantiable();
 		});
 	}
 
@@ -289,6 +294,8 @@ class PluginManager extends Utility\ConfigurableClass
 		$availableContracts = $this->config(self::$configDomain, "contracts");
 		$declarations = &$pluginContainer->getDeclarations();
 
+		// TODO check app config for user-defined contracts.
+
 		foreach ( $declarations as &$declaration ) {
 			if ( !in_array($declaration->getContract(), $availableContracts) ) {
 				return false;
@@ -299,12 +306,28 @@ class PluginManager extends Utility\ConfigurableClass
 			$rc = new \ReflectionClass($declaration->getClass());
 
 			// TODO: See if there's some way to do this without hard-coding the contract namespace here
-			if ( !in_array("Cannoli\\Framework\\Contract\\".$declaration->getContract(), $rc->getInterfaceNames()) ) {
+			if ( !in_array($this->addContractNamespace($declaration->getContract()), $rc->getInterfaceNames()) ) {
 				return false;
 			}
 		}
 
 		return true;
+	}
+
+	/**
+	 * Adds the full contract namespace if it's not already added.
+	 *
+	 * @access private
+	 * @param $contract 	The contract to add the namespace to
+	 * @return string 		The (possibly) updated fully namespaced contract name
+	 */
+	private function addContractNamespace($contract) {
+		$contractNamespace = $this->config(self::$configDomain, "contractNamespace", "Cannoli\\Framework\\Contract");
+		if ( substr($contract, 0, strlen($contractNamespace)) == $contractNamespace ) {
+			return $contract;
+		}
+
+		return $contractNamespace ."\\". trim($contract, "\\");
 	}
 
 	/**

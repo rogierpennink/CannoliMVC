@@ -15,6 +15,8 @@ use Cannoli\Framework\Core\Exception;
  */
 class PluginDeclarationResolver
 {
+	private $contractNamespace = "Cannoli\\Framework\\Contract";
+
 	private $contract;
 
 	private $class;
@@ -52,6 +54,8 @@ class PluginDeclarationResolver
 
 		$this->contract = $declaration->contract;
 	}
+
+	
 
 	/**
 	 * Returns the instantiated PluginBase-derived class that implements the contract specified

@@ -69,6 +69,18 @@ class PluginContainer
 	}
 
 	/**
+	 * If the domain's class name has been specified to be null, it is assumed that
+	 * no plugin class can be instantiated. If the domain's class name is not null,
+	 * the type may still be uninstantiable, but that would be a configuration error.
+	 *
+	 * @access public
+	 * @return bool 		
+	 */
+	public function isInstantiable() {
+		return !is_null($this->domain->class);
+	}
+
+	/**
 	 * Triggers the requested event method on the plugin instance. If no instance
 	 * can be constructed, this method fails silently.
 	 *
@@ -104,6 +116,10 @@ class PluginContainer
 		// 	throw new Exception\Plugin\PluginClassLoaderException("Failed call to \"". $this->getClass() ."::getInstance()\"");
 		// }
 		// return $instance;
+	}
+
+	public function getContractInstance() {
+
 	}
 
 	/**
