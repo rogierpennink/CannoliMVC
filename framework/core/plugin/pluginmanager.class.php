@@ -164,7 +164,7 @@ class PluginManager extends Utility\ConfigurableClass
 	public function onAfterRouting(Core\IRenderable &$renderable) {
 		$viewCollection = new View\ViewCollection();
 
-		foreach ( $this->plugins as $pluginContainer ) {
+		foreach ( $this->getInstantiablePlugins() as $pluginContainer ) {
 			$newRenderable = $pluginContainer->trigger("onAfterRouting", array($renderable));
 			if ( !($newRenderable instanceof Core\IRenderable) ) {
 				throw new \UnexpectedValueException("Return value for onAfterRouting on plugin: \"{$pluginContainer->getId()}\" must be of type IRenderable.");
@@ -175,6 +175,20 @@ class PluginManager extends Utility\ConfigurableClass
 		// If there are no plugins we still need to render the original renderable
 		if ( $viewCollection->count() == 0 ) return $renderable;
 		return $viewCollection;
+	}
+
+	/**
+	 * Constructs and returns an array of plugins that can be instantiated as a
+	 * PluginBase-derived instance. Plugins that only implement system contracts
+	 * are left out.
+	 *
+	 * @access public
+	 * @return array 				The array of instantiable plugins
+	 */
+	public function getInstantiablePlugins() {
+		return array_filter($this->plugins, function($el) {
+			return !is_null($el->getClass());
+		});
 	}
 
 	/**
@@ -195,7 +209,7 @@ class PluginManager extends Utility\ConfigurableClass
 		// Attempt to construct a PluginContainer. If construction of the container
 		// is successful we can proceed querying it for information from the config
 		// in order to load the appropriate classes etc.
-		$container = new PluginContainer($config);
+		$container = new PluginContainer($config, $this->app);
 		$configurations = $container->getConfigurations();
 
 		// Create and register ConfigurationContainers for the configSections
