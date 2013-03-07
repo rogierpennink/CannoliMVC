@@ -54,26 +54,5 @@ class PluginDeclarationResolver
 
 		$this->contract = $declaration->contract;
 	}
-
-	
-
-	/**
-	 * Returns the instantiated PluginBase-derived class that implements the contract specified
-	 * by this plugin declaration.
-	 * 
-	 * If the plugin declaration instance has not yet been loaded, this method will create it.
-	 * Since the plugin is necessarily always a singleton (PluginBase inherits from Singleton),
-	 * this method simply wraps around the plugin class' getInstance static method.
-	 *
-	 * @access public
-	 * @return object 		The plugin's class instance
-	 */
-	public function &getInstance() {
-		$callable = array($this->getClass(), "getInstance");
-		if ( ($instance = call_user_func($callable)) === false ) {
-			throw new Exception\Plugin\PluginClassLoaderException("Failed call to \"". $this->getClass() ."::getInstance()\"");
-		}
-		return $instance;
-	}
 }
 ?>

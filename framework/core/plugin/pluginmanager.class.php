@@ -130,7 +130,7 @@ class PluginManager extends Utility\ConfigurableClass
 			foreach ( $declarations as &$declaration ) {
 				if ( $declaration->getContract() == $contract ) {
 					if ( $requestedPluginContainer !== false ) {
-						throw new Exception\Plugin\PluginConflictException("More than one plugin that implements ". $contract ." was found.");
+						throw new Exception\Plugin\PluginConflictException("More than one active plugin that implements ". $contract ." was found.");
 					}
 
 					$requestedPluginContainer = $pluginContainer;
@@ -139,7 +139,16 @@ class PluginManager extends Utility\ConfigurableClass
 			}
 		}
 
-		return $requestedPluginContainer;
+		return $requestedDeclaration;
+	}
+
+	public function getInstanceOfDeclaration($contract) {
+		$declaration = $this->getDeclaration($contract);
+		if ( $declaration === false ) {
+			throw new Exception\FrameworkException("Could not instantiate database connection manager: no contract declaration found.");
+		}
+		$clsName = $this->addContractNamespace($contract);
+		return call_user_func(array($clsName, "getInstance"));
 	}
 
 	/**
@@ -307,6 +316,10 @@ class PluginManager extends Utility\ConfigurableClass
 
 			// TODO: See if there's some way to do this without hard-coding the contract namespace here
 			if ( !in_array($this->addContractNamespace($declaration->getContract()), $rc->getInterfaceNames()) ) {
+				return false;
+			}
+
+			if ( !is_subclass_of($declaration->getClass(), "Cannoli\\Framework\\Core\\Plugin\\PluginContractDeclaration") ) {
 				return false;
 			}
 		}

@@ -195,19 +195,6 @@ class Application extends Utility\ConfigurableSingleton
 	}
 
 	/**
-	 * Since DatabaseConnectionManager extends Singleton, this method simply acts
-	 * as a proxy to the DatabaseConnectionmanager::getInstance static method.
-	 * The manager itself allows the user to register new DatabaseConnection-derived
-	 * types.
-	 *
-	 * @access public
-	 * @return object 			The DatabaseConnectionManager instance.
-	 */
-	public function &getDatabaseConnectionManager() {
-		return DatabaseConnectionManager::getInstance();
-	}
-
-	/**
 	 * Gets the Plugin Manager
 	 * 
 	 * Since the PluginManager extends Singleton, this method simply acts as a
@@ -218,7 +205,7 @@ class Application extends Utility\ConfigurableSingleton
 	 * @return object 			The Pluginmanager instance.
 	 */
 	public function &getPluginManager() {
-		return $this->getIocContainer()->getInstance("Cannoli\Framework\Core\Plugin\PluginManager");
+		return $this->getIocContainer()->getInstance("Cannoli\\Framework\\Core\\Plugin\\PluginManager");
 	}
 
 	/**
@@ -234,6 +221,13 @@ class Application extends Utility\ConfigurableSingleton
 	 */
 	public function &getConfigurationManager() {
 		return Configuration\ConfigurationManager::getInstance();
+	}
+
+	/**
+	 *
+	 */
+	public function &getDatabaseConnectionManager() {
+		return $this->getPluginManager()->getInstanceOfDeclaration("Database\\IDatabaseConnectionManager");
 	}
 	
 	/**
