@@ -3,7 +3,7 @@ namespace Cannoli\Framework\Core\Ioc;
 
 use Cannoli\Framework\Core\Exception;
 
-class IocContainer
+class IocContainer extends NamespaceContainer
 {
 	private $bindings = array();
 
@@ -23,8 +23,13 @@ class IocContainer
 	 * @return void
 	 */
 	public function registerModule(BindingModule &$module) {
+		// We have to clear the namespace before and after loading the module
+		// so that other modules don't have to worry about a namespace already
+		// having been set.
 		$module->setIocContainer($this);
+		$this->clearNamespace();
 		$module->load();
+		$this->clearNamespace();
 	}
 
 	/**
@@ -44,6 +49,26 @@ class IocContainer
 		}
 
 		$this->bindings[$binding->getTypeName()] = $binding;
+	}
+
+	/**
+	 * Acts as a shortcut to prevent the user from having to hassle with
+	 * creating and adding Binding instances to IocContainer.
+	 *
+	 * @access public
+	 * @param $typeName 		The typeName that is going to be bound to an implementation
+	 * @return BindingTarget 	The created BindingTarget instance
+	 */
+	public function &bind($typeName) {
+		// Create new binding
+		$binding = new Binding($typeName);
+		$binding->setNamespace($this->getNamespace());
+		$bindingTarget =& $binding->getBindingTarget();
+
+		// Register with IoC container
+		$this->addBinding($binding);
+
+		return $bindingTarget;
 	}
 
 	/**
@@ -145,6 +170,17 @@ class IocContainer
 	}
 
 	/**
+	 * Checks whether a binding exists for the given typeName.
+	 *
+	 * @access private
+	 * @param $typeName 			The type name for which to check for bindings
+	 * @return bool 				True if a binding was found, false otherwise
+	 */
+	public function hasBindingWithTypeName($typeName) {
+		return isset($this->bindings[$typeName]);
+	}
+
+	/**
 	 * @access private
 	 * @param $typeName 			The type name for which to find a binding
 	 * @return mixed 				If found, returns the requested binding, otherwise returns false
@@ -155,17 +191,6 @@ class IocContainer
 		}
 
 		return $this->bindings[$typeName];
-	}
-
-	/**
-	 * Checks whether a binding exists for the given typeName.
-	 *
-	 * @access private
-	 * @param $typeName 			The type name for which to check for bindings
-	 * @return bool 				True if a binding was found, false otherwise
-	 */
-	private function hasBindingWithTypeName($typeName) {
-		return isset($this->bindings[$typeName]);
 	}
 
 	/**

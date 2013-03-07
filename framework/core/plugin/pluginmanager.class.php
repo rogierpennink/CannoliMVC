@@ -86,11 +86,32 @@ class PluginManager extends Utility\ConfigurableClass
 			$this->configurationManager->registerConfiguration($configuration);
 		}
 
+		// Register contracts with the ioc container
+		foreach ( $pluginContainer->getDeclarations() as $declaration ) {
+			$this->bindContractDeclaration($declaration);
+		}
+
 		// Notify the plugin that it has been registered successfully
-		//$pluginContainer->getInstance()->onRegistrationComplete();
 		if ( $pluginContainer->isInstantiable() ) {
 			$pluginContainer->trigger("onRegistrationComplete");	
 		}
+	}
+
+	private function bindContractDeclaration(PluginDeclarationResolver $declaration) {
+		$contract = $declaration->getContract();
+		$namespacedContract = $this->addContractNamespace($contract);
+		$declarationClsName = $declaration->getClass();
+		
+		// Find the scope from plugin manager configuration
+		$scopeMethod = "inTransientScope";
+		$scopes = $this->config(self::$configDomain, "contractScopes", "transient");
+		foreach ( $scopes as $scope ) {
+			if ( $scope->contract != $contract ) continue;
+			$scopeMethod = "in". ucfirst($scope->scope) ."Scope";
+		}
+		
+		$bindingScope =& $this->app->getIocContainer()->bind($namespacedContract)->to($declarationClsName);
+		call_user_func(array($bindingScope, $scopeMethod));
 	}
 
 	/**

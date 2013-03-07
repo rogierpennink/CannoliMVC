@@ -12,5 +12,9 @@ interface IDatabaseConnectionManager
 	function hasConnection($id);
 
 	function getDatabaseConnectionIds();
+
+	function getActiveConnection();
+
+	function setActive($id);
 }
 ?>

@@ -6,16 +6,6 @@ use Cannoli\Framework\Contract,
 
 class CannoliDCM extends Plugin\PluginContractDeclaration implements Contract\Database\IDatabaseConnectionManager
 {
-	private static $instance;
-
-	public static function &getInstance() {
-		if ( empty($this->instance) ) {
-			$this->instance = new CannoliDCM();
-		}
-
-		return $this->instance;
-	}
-
 	function createDatabaseConnection($id, Contract\Database\IDatabaseConnectionFactory &$factory) {}
 
 	function addDatabaseConnection($id, Contract\Database\IDatabaseConnection &$connection) {}
@@ -25,5 +15,9 @@ class CannoliDCM extends Plugin\PluginContractDeclaration implements Contract\Da
 	function hasConnection($id) {}
 
 	function getDatabaseConnectionIds() {}
+
+	function getActiveConnection() {}
+
+	function setActive($id) {}
 }
 ?>

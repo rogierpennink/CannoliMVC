@@ -1,8 +1,12 @@
 <?php
 namespace Cannoli\Framework\Core\Plugin;
 
-abstract class PluginContractDeclaration
+use Cannoli\Framework\Core\Utility;
+
+abstract class PluginContractDeclaration extends Utility\ConfigurableClass
 {
-	abstract public static function getInstance();
+	public function getConfigurationDomains() {
+		return array();
+	}
 }
 ?>

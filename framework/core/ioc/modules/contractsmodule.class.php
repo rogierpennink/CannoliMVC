@@ -9,9 +9,9 @@ class ContractsModule extends BindingModule
 	public function load() {
 		$this->setNamespace("Cannoli\\Framework\\Contract");
 
-		$this->bind("Database\\IDatabaseConnectionManager")->to(function() {
-			return Application::getInstance()->getDatabaseConnectionManager();
-		})->inSingletonScope();
+		$this->bind("Database\\IDatabaseConnection")->to(function() {
+			return Application::getInstance()->getDatabaseConnectionManager()->getActiveConnection();
+		});
 	}
 }
 ?>

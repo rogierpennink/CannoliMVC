@@ -25,31 +25,23 @@ abstract class BindingModule
 	}
 
 	public function setNamespace($namespace) {
-		$this->namespace = $namespace;
+		$this->container->setNamespace($namespace);
 	}
 
 	public function clearNamespace() {
-		$this->namespace = "";
+		$this->container->clearNamespace();
 	}
 
 	/**
 	 * Acts as a shortcut to prevent the user from having to hassle with
 	 * creating and adding Binding instances to IocContainer.
 	 *
-	 * @access public
+	 * @access protected
 	 * @param $typeName 		The typeName that is going to be bound to an implementation
 	 * @return BindingTarget 	The created BindingTarget instance
 	 */
 	protected function &bind($typeName) {
-		// Create new binding
-		$binding = new Binding($typeName);
-		$binding->setNamespace($this->namespace);
-		$bindingTarget =& $binding->getBindingTarget();
-
-		// Register with IoC container
-		$this->container->addBinding($binding);
-
-		return $bindingTarget;
+		return $this->container->bind($typeName);
 	}
 }
 ?>

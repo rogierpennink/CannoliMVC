@@ -224,10 +224,13 @@ class Application extends Utility\ConfigurableSingleton
 	}
 
 	/**
+	 * Queries the IoC container for a database connection manager instance.
 	 *
+	 * @access public
+	 * @return IDatabaseConnectionManager
 	 */
 	public function &getDatabaseConnectionManager() {
-		return $this->getPluginManager()->getInstanceOfDeclaration("Database\\IDatabaseConnectionManager");
+		return $this->getIocContainer()->getInstance("Cannoli\\Framework\\Contract\\Database\\IDatabaseConnectionManager");
 	}
 	
 	/**
