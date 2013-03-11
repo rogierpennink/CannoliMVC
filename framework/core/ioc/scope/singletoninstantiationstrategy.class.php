@@ -10,7 +10,7 @@ namespace Cannoli\Framework\Core\Ioc\Scope;
  * @author Rogier Pennink
  * @category Ioc
  */
-class SingletonInstantiationStrategy implements IInstantiationStrategy
+class SingletonInstantiationStrategy extends BaseInstantiationStrategy
 {
 	private static $objCache = array();
 
@@ -35,6 +35,8 @@ class SingletonInstantiationStrategy implements IInstantiationStrategy
 
 		// TODO: See if there is a way of doing this without reflection
 		self::$objCache[$typeName] = $rc->newInstanceArgs($constructorArgs);
+		
+		$this->onNewInstanceCreated(self::$objCache[$typeName]);
 
 		return self::$objCache[$typeName];
 	}

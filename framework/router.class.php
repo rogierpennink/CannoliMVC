@@ -43,6 +43,7 @@ class Router
 		/* We only use path info, break it up into parts first. */
 		$segments = $url->getSegments();
 		
+		// TODO: Take subdirectories into account here
 		$strController = trim(empty($segments) ? $this->defaultController : $segments[0]);
 		$strMethod = trim(count($segments) < 2 ? $this->defaultMethod : $segments[1]);
 		

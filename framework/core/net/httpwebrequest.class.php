@@ -221,8 +221,4 @@ class HttpWebRequest
 		return $parts;
 	}
 }
-
-
-$request = HttpWebRequest::getCurrent();
-echo $request;
 ?>

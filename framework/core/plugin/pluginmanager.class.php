@@ -40,6 +40,8 @@ class PluginManager extends Utility\ConfigurableClass
 	public function __construct(Application &$app) {
 		parent::__construct();
 
+		$this->app = $app;
+
 		// TODO: Preferably, this is injected rather than requested...
 		$this->configurationManager =& $app->getConfigurationManager();
 		$this->configurationManager->registerConfigurable($this);
@@ -81,11 +83,18 @@ class PluginManager extends Utility\ConfigurableClass
 
 		// Now that the plugin has been successfully registered, we can add the configuration sections
 		foreach ( $pluginContainer->getConfigurations() as $configuration ) {
-			$this->configurationManager->register($configuration);
+			$this->configurationManager->registerConfiguration($configuration);
+		}
+
+		// Register contracts with the ioc container
+		foreach ( $pluginContainer->getDeclarations() as $declaration ) {
+			$this->bindContractDeclaration($declaration);
 		}
 
 		// Notify the plugin that it has been registered successfully
-		$pluginContainer->getInstance()->onRegistrationComplete();
+		if ( $pluginContainer->isInstantiable() ) {
+			$pluginContainer->trigger("onRegistrationComplete");	
+		}
 	}
 
 	/**
@@ -100,7 +109,9 @@ class PluginManager extends Utility\ConfigurableClass
 			throw new Exception\Plugin\PluginRemoveException("Plugin with id \"$key\" was not found and cannot be removed.");
 		}
 
-		$this->plugins[$key]->getInstance()->onRegistrationUndone();
+		if ( $this->plugins[$key]->isInstantiable() ) {
+			$this->plugins[$key]->getInstance()->onRegistrationUndone();
+		}
 
 		unset($this->plugins[$key]);
 	}
@@ -110,12 +121,12 @@ class PluginManager extends Utility\ConfigurableClass
 	 * declarations that match the requested contract.
 	 * 
 	 * @access public
-	 * @param string 			The contract for which to search plugins
-	 * @return PluginContainer 	The requested PluginContainer, or false if no plugin
-	 * 							for the requested contract could be found.
+	 * @param $contract 					The contract for which to search plugins
+	 * @return PluginDeclarationResolver	The requested PluginDeclarationResolver, or false if no plugin
+	 * 										for the requested contract could be found.
 	 * @throws PluginConflictException
 	 */
-	public function getByContract($contract) {
+	public function getDeclaration($contract) {
 		$requestedPluginContainer = false;
 
 		foreach ( $this->plugins as $key => &$pluginContainer ) {
@@ -123,15 +134,16 @@ class PluginManager extends Utility\ConfigurableClass
 			foreach ( $declarations as &$declaration ) {
 				if ( $declaration->getContract() == $contract ) {
 					if ( $requestedPluginContainer !== false ) {
-						throw new Exception\Plugin\PluginConflictException("More than one plugin that implements ". $contract ." was found.");
+						throw new Exception\Plugin\PluginConflictException("More than one active plugin that implements ". $contract ." was found.");
 					}
 
 					$requestedPluginContainer = $pluginContainer;
+					$requestedDeclaration = $declaration;
 				}
 			}
 		}
 
-		return $requestedPluginContainer;
+		return $requestedDeclaration;
 	}
 
 	/**
@@ -145,8 +157,8 @@ class PluginManager extends Utility\ConfigurableClass
 		// TODO: need some way of allowing plugins to specify whether they want
 		// to be notified of this request or not
 		// This is true for all plugin events
-		foreach ( $this->plugins as $pluginContainer ) {
-			$pluginContainer->getInstance()->onBeforeRouting();
+		foreach ( $this->getInstantiablePlugins() as $pluginContainer ) {
+			$pluginContainer->trigger("onBeforeRouting");
 		}
 	}
 
@@ -161,8 +173,8 @@ class PluginManager extends Utility\ConfigurableClass
 	public function onAfterRouting(Core\IRenderable &$renderable) {
 		$viewCollection = new View\ViewCollection();
 
-		foreach ( $this->plugins as $pluginContainer ) {
-			$newRenderable = $pluginContainer->getInstance()->onAfterRouting($renderable);
+		foreach ( $this->getInstantiablePlugins() as $pluginContainer ) {
+			$newRenderable = $pluginContainer->trigger("onAfterRouting", array($renderable));
 			if ( !($newRenderable instanceof Core\IRenderable) ) {
 				throw new \UnexpectedValueException("Return value for onAfterRouting on plugin: \"{$pluginContainer->getId()}\" must be of type IRenderable.");
 			}
@@ -172,6 +184,20 @@ class PluginManager extends Utility\ConfigurableClass
 		// If there are no plugins we still need to render the original renderable
 		if ( $viewCollection->count() == 0 ) return $renderable;
 		return $viewCollection;
+	}
+
+	/**
+	 * Constructs and returns an array of plugins that can be instantiated as a
+	 * PluginBase-derived instance. Plugins that only implement system contracts
+	 * are left out.
+	 *
+	 * @access public
+	 * @return array 				The array of instantiable plugins
+	 */
+	public function getInstantiablePlugins() {
+		return array_filter($this->plugins, function($el) {
+			return $el->isInstantiable();
+		});
 	}
 
 	/**
@@ -187,12 +213,12 @@ class PluginManager extends Utility\ConfigurableClass
 		$config = $this->loadPluginConfiguration($path);
 
 		// If no error occurred, the path must be valid so add to autoload directories
-		Application::getInstance()->addAutoloadDirectory($path);
+		$this->app->addAutoloadDirectory($path);
 
 		// Attempt to construct a PluginContainer. If construction of the container
 		// is successful we can proceed querying it for information from the config
 		// in order to load the appropriate classes etc.
-		$container = new PluginContainer($config);
+		$container = new PluginContainer($config, $this->app);
 		$configurations = $container->getConfigurations();
 
 		// Create and register ConfigurationContainers for the configSections
@@ -241,8 +267,9 @@ class PluginManager extends Utility\ConfigurableClass
 	 * 
 	 */
 	protected function validatePlugin(PluginContainer &$pluginContainer) {
+		$pluginInst = $pluginContainer->getInstance();
 		// No matter what, the plugin needs to inherit from PluginBase
-		if ( !($pluginContainer->getInstance() instanceof PluginBase) ) {
+		if ( $pluginInst != null && !($pluginInst instanceof PluginBase) ) {
 			throw new Exception\Plugin\PluginRegistrationException("Plugin class must inherit from Cannoli\\Framework\\Core\\Plugin\\PluginBase.");
 		}
 
@@ -271,6 +298,8 @@ class PluginManager extends Utility\ConfigurableClass
 		$availableContracts = $this->config(self::$configDomain, "contracts");
 		$declarations = &$pluginContainer->getDeclarations();
 
+		// TODO check app config for user-defined contracts.
+
 		foreach ( $declarations as &$declaration ) {
 			if ( !in_array($declaration->getContract(), $availableContracts) ) {
 				return false;
@@ -279,18 +308,105 @@ class PluginManager extends Utility\ConfigurableClass
 			// Using reflection we can test if the declared class actually
 			// implements the contract, without having to instantiate it.
 			$rc = new \ReflectionClass($declaration->getClass());
-			// TODO: this is ugly, we need a generic way to strip namespaces from class names
-			$iNames = array_map(function($el) {
-				$parts = explode("\\", $el);
-				return $parts[count($parts) - 1];
-			}, $rc->getInterfaceNames());
-			
-			if ( !in_array($declaration->getContract(), $iNames) ) {
+
+			// TODO: See if there's some way to do this without hard-coding the contract namespace here
+			if ( !in_array($this->addContractNamespace($declaration->getContract()), $rc->getInterfaceNames()) ) {
+				return false;
+			}
+
+			if ( !is_subclass_of($declaration->getClass(), "Cannoli\\Framework\\Core\\Plugin\\PluginContractDeclaration") ) {
 				return false;
 			}
 		}
 
 		return true;
+	}
+
+	/**
+	 * Adds the full contract namespace if it's not already added.
+	 *
+	 * @access private
+	 * @param $contract 	The contract to add the namespace to
+	 * @return string 		The (possibly) updated fully namespaced contract name
+	 */
+	private function addContractNamespace($contract) {
+		$contractNamespace = $this->config(self::$configDomain, "contractNamespace", "Cannoli\\Framework\\Contract");
+		if ( substr($contract, 0, strlen($contractNamespace)) == $contractNamespace ) {
+			return $contract;
+		}
+
+		return $contractNamespace ."\\". trim($contract, "\\");
+	}
+
+	/**
+	 * Binds a plugin declaration contract to a valid plugin classname so that the
+	 * declaration can be instantiated using the IoC container. Also checks if the
+	 * contract implementation exposes the mandatory configuration domains.
+	 *
+	 * @access private
+	 * @param $declaration	The declaration container to use for the binding
+	 * @return void
+	 */
+	private function bindContractDeclaration(PluginDeclarationResolver $declaration) {
+		$contract = $declaration->getContract();
+		$namespacedContract = $this->addContractNamespace($contract);
+		$declarationClsName = $declaration->getClass();
+
+		// Early exit condition - we don't need to bind if a system module has already
+		// bound an implementation for this declaration
+		if ( $this->app->getIocContainer()->hasBindingWithTypeName($namespacedContract) ) {
+			return;
+		}
+		
+		// Find the scope from plugin manager configuration
+		$scopeMethod = "inTransientScope";
+		$scopes = $this->config(self::$configDomain, "contractScopes", "transient");
+		foreach ( $scopes as $scope ) {
+			if ( $scope->contract != $contract ) continue;
+			$scopeMethod = "in". ucfirst($scope->scope) ."Scope";
+		}
+
+		// Add a closure as argument to the scope method, to throw an exception if after
+		// instantiation it appears that the wrong configuration domains are exposed
+		$args = array(function($instance) use($contract) {
+			if ( !($instance instanceof PluginContractDeclaration) ) {
+				// This should never happen
+				throw new Exception\Plugin\PluginDeclarationInstantiationException("Plugin declaration instance was constructed but does not inherit from PluginContractDeclaration.");
+			}
+
+			$exposedDomains = $instance->getConfigurationDomains();
+			$requiredDomains = $this->getRequiredConfigurationDomainsForContract($contract);
+			if ( !empty($requiredDomains) ) {
+				if ( count(array_intersect($exposedDomains, $requiredDomains)) != count($requiredDomains) ) {
+					throw new Exception\Plugin\PluginDeclarationInstantiationException("Plugin declaration instance for contract ($contract) does not expose required configuration domains.");
+				}
+			}
+		});
+		
+		$bindingScope =& $this->app->getIocContainer()->bind($namespacedContract)->to($declarationClsName);
+		call_user_func_array(array($bindingScope, $scopeMethod), $args);
+	}
+
+	/**
+	 * Searches the contract-configdomain mappings for a matching
+	 *
+	 * @access private
+	 * @param $contract 	The contract to search config domain requirements for
+	 * @return array 		The array of required config domains (can be empty)
+	 */
+	private function getRequiredConfigurationDomainsForContract($contract) {
+		$contractMappings = $this->config(self::$configDomain, "contractConfigDomains", array());
+
+		foreach ( $contractMappings as $mapping ) {
+			if ( $mapping->contract == $contract ) {
+				if ( is_array($mapping->domains) ) {
+					return $mapping->domains;
+				}
+				break;
+			}
+		}
+
+		return array();
 	}
 
 	/**

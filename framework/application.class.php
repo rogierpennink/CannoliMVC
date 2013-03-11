@@ -195,19 +195,6 @@ class Application extends Utility\ConfigurableSingleton
 	}
 
 	/**
-	 * Since DatabaseConnectionManager extends Singleton, this method simply acts
-	 * as a proxy to the DatabaseConnectionmanager::getInstance static method.
-	 * The manager itself allows the user to register new DatabaseConnection-derived
-	 * types.
-	 *
-	 * @access public
-	 * @return object 			The DatabaseConnectionManager instance.
-	 */
-	public function &getDatabaseConnectionManager() {
-		return DatabaseConnectionManager::getInstance();
-	}
-
-	/**
 	 * Gets the Plugin Manager
 	 * 
 	 * Since the PluginManager extends Singleton, this method simply acts as a
@@ -218,7 +205,7 @@ class Application extends Utility\ConfigurableSingleton
 	 * @return object 			The Pluginmanager instance.
 	 */
 	public function &getPluginManager() {
-		return $this->getIocContainer()->getInstance("Cannoli\Framework\Core\Plugin\PluginManager");
+		return $this->getIocContainer()->getInstance("Cannoli\\Framework\\Core\\Plugin\\PluginManager");
 	}
 
 	/**
@@ -234,6 +221,16 @@ class Application extends Utility\ConfigurableSingleton
 	 */
 	public function &getConfigurationManager() {
 		return Configuration\ConfigurationManager::getInstance();
+	}
+
+	/**
+	 * Queries the IoC container for a database connection manager instance.
+	 *
+	 * @access public
+	 * @return IDatabaseConnectionManager
+	 */
+	public function &getDatabaseConnectionManager() {
+		return $this->getIocContainer()->getInstance("Cannoli\\Framework\\Contract\\Database\\IDatabaseConnectionManager");
 	}
 	
 	/**
@@ -417,11 +414,6 @@ class Application extends Utility\ConfigurableSingleton
 		$this->addAutoloadDirectory(PATH_SYSTEM."/core/exception/configuration");
 
 		$this->addAutoloadDirectory(PATH_SYSTEM."/core/utility");
-	}
-
-	private function initDatabaseConnection() {
-		$dbcManager = $this->getDatabaseConnectionManager();
-		
 	}
 }
 ?>

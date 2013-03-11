@@ -1,5 +1,5 @@
 <?php
-namespace Cannoli\Framework\Core\Plugin\Contracts;
+namespace Cannoli\Framework\Contract;
 
 interface IUserAccountManager
 {

@@ -1,5 +1,5 @@
 <?php
-namespace Cannoli\Framework\Core\Plugin\Contracts\Database;
+namespace Cannoli\Framework\Contract\Database;
 
 interface IDatabaseConnection
 {
@@ -21,6 +21,6 @@ interface IDatabaseConnection
 	function getDbName();
 
 	// 
-	function query($sql, array $args = array());
+	function query($sql);
 }
 ?>
