@@ -45,7 +45,7 @@ class IocContainer extends NamespaceContainer
 			// Throw an exception because a wrong binding is a configuration problem
 			// so no use in failing silently
 			$implementation = $conflictingBinding->getBindingTarget() == null ? "" : $conflictingBinding->getBindingTarget()->getTypeName();
-			throw new Exception\Ioc\IocBindingRegistrationException("Binding already exists for given typeName.", $conflictingBinding->getTypeName(), $implementation);
+			throw new Exception\Ioc\IocBindingRegistrationException("Binding already exists for given typeName (". $conflictingBinding->getTypeName() .").", $conflictingBinding->getTypeName(), $implementation);
 		}
 
 		$this->bindings[$binding->getTypeName()] = $binding;

@@ -199,7 +199,7 @@ class ConfigurationContainer implements Core\IConfiguration
 
     	$this->domain = $configSection->domain;
     	if ( isset($configSection->accessLevel) ) {
-    		$this->accessLevel = $configSection->{"accessLevel"} == self::ACL_PUBLIC ? self::ACL_PUBLIC : self::ACL_PRIVATE;
+    		$this->accessLevel = $configSection->accessLevel == self::ACL_PUBLIC ? self::ACL_PUBLIC : self::ACL_PRIVATE;
     	}
     	
     	$settings = get_object_vars($configSection->settings);

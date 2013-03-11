@@ -97,23 +97,6 @@ class PluginManager extends Utility\ConfigurableClass
 		}
 	}
 
-	private function bindContractDeclaration(PluginDeclarationResolver $declaration) {
-		$contract = $declaration->getContract();
-		$namespacedContract = $this->addContractNamespace($contract);
-		$declarationClsName = $declaration->getClass();
-		
-		// Find the scope from plugin manager configuration
-		$scopeMethod = "inTransientScope";
-		$scopes = $this->config(self::$configDomain, "contractScopes", "transient");
-		foreach ( $scopes as $scope ) {
-			if ( $scope->contract != $contract ) continue;
-			$scopeMethod = "in". ucfirst($scope->scope) ."Scope";
-		}
-		
-		$bindingScope =& $this->app->getIocContainer()->bind($namespacedContract)->to($declarationClsName);
-		call_user_func(array($bindingScope, $scopeMethod));
-	}
-
 	/**
 	 * Attemps to remove the specified plugin from the internal list.
 	 *
@@ -353,6 +336,77 @@ class PluginManager extends Utility\ConfigurableClass
 		}
 
 		return $contractNamespace ."\\". trim($contract, "\\");
+	}
+
+	/**
+	 * Binds a plugin declaration contract to a valid plugin classname so that the
+	 * declaration can be instantiated using the IoC container. Also checks if the
+	 * contract implementation exposes the mandatory configuration domains.
+	 *
+	 * @access private
+	 * @param $declaration	The declaration container to use for the binding
+	 * @return void
+	 */
+	private function bindContractDeclaration(PluginDeclarationResolver $declaration) {
+		$contract = $declaration->getContract();
+		$namespacedContract = $this->addContractNamespace($contract);
+		$declarationClsName = $declaration->getClass();
+
+		// Early exit condition - we don't need to bind if a system module has already
+		// bound an implementation for this declaration
+		if ( $this->app->getIocContainer()->hasBindingWithTypeName($namespacedContract) ) {
+			return;
+		}
+		
+		// Find the scope from plugin manager configuration
+		$scopeMethod = "inTransientScope";
+		$scopes = $this->config(self::$configDomain, "contractScopes", "transient");
+		foreach ( $scopes as $scope ) {
+			if ( $scope->contract != $contract ) continue;
+			$scopeMethod = "in". ucfirst($scope->scope) ."Scope";
+		}
+
+		// Add a closure as argument to the scope method, to throw an exception if after
+		// instantiation it appears that the wrong configuration domains are exposed
+		$args = array(function($instance) use($contract) {
+			if ( !($instance instanceof PluginContractDeclaration) ) {
+				// This should never happen
+				throw new Exception\Plugin\PluginDeclarationInstantiationException("Plugin declaration instance was constructed but does not inherit from PluginContractDeclaration.");
+			}
+
+			$exposedDomains = $instance->getConfigurationDomains();
+			$requiredDomains = $this->getRequiredConfigurationDomainsForContract($contract);
+			if ( !empty($requiredDomains) ) {
+				if ( count(array_intersect($exposedDomains, $requiredDomains)) != count($requiredDomains) ) {
+					throw new Exception\Plugin\PluginDeclarationInstantiationException("Plugin declaration instance for contract ($contract) does not expose required configuration domains.");
+				}
+			}
+		});
+		
+		$bindingScope =& $this->app->getIocContainer()->bind($namespacedContract)->to($declarationClsName);
+		call_user_func_array(array($bindingScope, $scopeMethod), $args);
+	}
+
+	/**
+	 * Searches the contract-configdomain mappings for a matching
+	 *
+	 * @access private
+	 * @param $contract 	The contract to search config domain requirements for
+	 * @return array 		The array of required config domains (can be empty)
+	 */
+	private function getRequiredConfigurationDomainsForContract($contract) {
+		$contractMappings = $this->config(self::$configDomain, "contractConfigDomains", array());
+
+		foreach ( $contractMappings as $mapping ) {
+			if ( $mapping->contract == $contract ) {
+				if ( is_array($mapping->domains) ) {
+					return $mapping->domains;
+				}
+				break;
+			}
+		}
+
+		return array();
 	}
 
 	/**

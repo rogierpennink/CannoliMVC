@@ -1,8 +1,10 @@
 <?php
-namespace Cannoli\Framework\Core\Database;
+namespace Cannoli\Framework\Plugin\CannoliMySQLPDO;
 
-use Cannoli\Framework\Core\Exception,
-	Cannoli\Framework\Core\Plugin\Contracts\Database;
+use Cannoli\Framework\Contract,
+	Cannoli\Framework\Core\Exception,
+	Cannoli\Framework\Core\Plugin;
+	
 
 /**
  * Implements the IResultSet interface using the PDO
@@ -13,7 +15,7 @@ use Cannoli\Framework\Core\Exception,
  * @author Rogier Pennink
  * @category Database
  */
-class PDOResultSet implements Database\IResultSet
+class PDOResultSet implements Contract\Database\IResultSet
 {
 	private $repeatCount;
 
@@ -29,7 +31,7 @@ class PDOResultSet implements Database\IResultSet
 
 	private $cursorLocation;
 
-	public function __construct(\PDO &$pdo, $sql, array $queryArgs) {
+	public function construct(\PDO &$pdo, $sql, array $queryArgs) {
 		$this->pdo 				= $pdo;
 		$this->sql 				= $sql;
 		$this->queryArgs		= $queryArgs;

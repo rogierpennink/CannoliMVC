@@ -1,8 +1,6 @@
 <?php
 namespace Cannoli\Framework\Plugin\CannoliMySQLPDO;
 
-use Cannoli\Framework\Core\Database;
-
 /**
  * A thin wrapper around the framework's PDODatabaseConnection class. This
  * class only makes sure that PDO uses the correct DSN for MySQL.
@@ -12,7 +10,7 @@ use Cannoli\Framework\Core\Database;
  * @author Rogier Pennink
  * @category Database
  */
-class MySQLPDODatabaseConnection extends Database\PDODatabaseConnection
+class MySQLPDODatabaseConnection extends PDODatabaseConnection
 {
 	/**
 	 * Initiates a connection with the target database server, using the specified

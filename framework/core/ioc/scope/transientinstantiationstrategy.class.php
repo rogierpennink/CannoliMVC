@@ -11,7 +11,7 @@ namespace Cannoli\Framework\Core\Ioc\Scope;
  * @author Rogier Pennink
  * @category Ioc
  */
-class TransientInstantiationStrategy implements IInstantiationStrategy
+class TransientInstantiationStrategy extends BaseInstantiationStrategy
 {
 	/**
 	 * @access public
@@ -19,7 +19,9 @@ class TransientInstantiationStrategy implements IInstantiationStrategy
 	 * @param $constructorArgs 		The array of arguments for the constructor
 	 */
 	public function instantiate(\ReflectionClass &$rc, array $constructorArgs) {
-	    return $rc->newInstanceArgs($constructorArgs);
-	}	
+		$instance = $rc->newInstanceArgs($constructorArgs);
+		$this->onNewInstanceCreated($instance);
+	    return $instance;
+	}
 }
 ?>

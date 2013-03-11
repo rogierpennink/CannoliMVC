@@ -20,6 +20,18 @@ class CannoliDCM extends Plugin\PluginContractDeclaration implements Contract\Da
 
 	private $connections = array();
 
+	private $databaseConnectionFactory;
+
+	private $isInitialized = false;
+
+	public function injectDatabaseConnectionFactory(Contract\Database\IDatabaseConnectionFactory &$factory) {
+		$this->databaseConnectionFactory = $factory;
+	}
+
+	public function getConfigurationDomains() {
+		return array("Cannoli.Application.Database");
+	}
+
 	/**
 	 * Attempts to create a new IDatabaseConnection instance using the supplied DatabaseConnectionFactory
 	 * and adds it to the manager's list of connections. Throws an InvalidArgumentException if a database-
@@ -37,7 +49,7 @@ class CannoliDCM extends Plugin\PluginContractDeclaration implements Contract\Da
 		}
 
 		// Create new instance
-		$connection =& $factory->createDatabaseConnection();
+		$connection =& $factory->getDatabaseConnection();
 		$this->addDatabaseConnection($id, $connection);
 	}
 
@@ -66,7 +78,7 @@ class CannoliDCM extends Plugin\PluginContractDeclaration implements Contract\Da
 	 * @return IDatabaseConnection
 	 * @throws InvalidArgumentException
 	 */
-	public function getDatabaseConnection($id) {
+	public function &getDatabaseConnection($id) {
 		if ( !$this->hasConnection($id) ) {
 			throw new \InvalidArgumentException("Database connection with id \"$id\" was not found");
 		}
@@ -80,6 +92,8 @@ class CannoliDCM extends Plugin\PluginContractDeclaration implements Contract\Da
 	 * @return bool
 	 */
 	public function hasConnection($id) {
+		$this->initConnections();
+
 		return isset($this->connections[$id]);
 	}
 
@@ -91,6 +105,8 @@ class CannoliDCM extends Plugin\PluginContractDeclaration implements Contract\Da
 	 * @return array 		The array of known ids
 	 */
 	public function getDatabaseConnectionIds() {
+		$this->initConnections();
+
 		return array_keys($this->connections);
 	}
 
@@ -104,6 +120,8 @@ class CannoliDCM extends Plugin\PluginContractDeclaration implements Contract\Da
 	 * @throws InvalidOperationException
 	 */
 	public function getActiveConnection() {
+		$this->initConnections();
+
 		if ( !is_null($this->activeId) ) {
 			return $this->getDatabaseConnection($this->activeId);
 		}
@@ -125,6 +143,34 @@ class CannoliDCM extends Plugin\PluginContractDeclaration implements Contract\Da
 		}
 
 		$this->activeId = $id;
+	}
+
+	/**
+	 * When this method is called, configurations will have been registered so
+	 * we can initialize the database connections that were configured in the
+	 * configuration files
+	 *
+	 * @access protected
+	 * @return void
+	 */
+	protected function initConnections() {
+		if ( $this->isInitialized ) return;
+
+		$this->isInitialized = true;
+
+		$connections = $this->config("Cannoli.Application.Database", "connections", array());
+
+		foreach ( $connections as $connection ) {
+			$this->createDatabaseConnection($connection->id, $this->databaseConnectionFactory);
+			$db =& $this->getDatabaseConnection($connection->id);
+			$db->connect($connection->host, $connection->user, $connection->pass, $connection->database);
+		}
+
+		// If no active id is set, we'll make the first id active
+		if ( is_null($this->activeId) && count($connections) > 0 ) {
+			$connectionIds = array_keys($this->connections);
+			$this->activeId = $connectionIds[0];
+		}
 	}
 }
 ?>

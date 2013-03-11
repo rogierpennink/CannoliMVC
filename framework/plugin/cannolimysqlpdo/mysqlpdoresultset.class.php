@@ -1,8 +1,7 @@
 <?php
 namespace Cannoli\Framework\Plugin\CannoliMySQLPDO;
 
-use Cannoli\Framework\Core\Database,
-	Cannoli\Framework\Core\Exception;
+use Cannoli\Framework\Core\Exception;
 
 /**
  * A thin wrapper around the framework's PDOResultSet class. This
@@ -13,7 +12,7 @@ use Cannoli\Framework\Core\Database,
  * @author Rogier Pennink
  * @category Database
  */
-class MySQLPDOResultSet extends Database\PDOResultSet
+class MySQLPDOResultSet extends PDOResultSet
 {
 	public function seek($pos) {
 		throw new Exception\Database\DatabaseResultSetException("Scrollable cursors are not supported in MySQLPDO");
