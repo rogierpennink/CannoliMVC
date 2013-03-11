@@ -282,7 +282,7 @@ class Application extends Utility\ConfigurableSingleton
 	 */
 	private function autoload($name) {
 		foreach ( $this->al_directories as $directory => $fileTemplate ) {
-			$name = basename($name);
+			$name = basename(str_replace("\\", "//", $name));
 			$filename = $directory ."/". str_replace("{0}", strtolower($name), $fileTemplate);
 			if ( file_exists($filename) ) {
 				require_once $filename;
