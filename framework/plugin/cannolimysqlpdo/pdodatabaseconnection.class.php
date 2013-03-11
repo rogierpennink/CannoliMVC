@@ -214,8 +214,13 @@ abstract class PDODatabaseConnection implements Contract\Database\IDatabaseConne
 	 * @return IResultSet
 	 * @throws DatabaseNotConnectedException
 	 */
-	public function query($sql, array $args = array()) {
+	public function query($sql) {
 		$this->checkIfConnected();
+
+		$args = func_get_args();
+		if ( count($args) > 1 ) {
+			array_shift($args);
+		}
 
 		$resultSet = $this->createResultSetFromQuery($sql, $args);
 		$resultSet->execute();

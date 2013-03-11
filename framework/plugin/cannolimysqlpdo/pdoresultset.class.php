@@ -58,7 +58,7 @@ class PDOResultSet implements Contract\Database\IResultSet
 	public function fetchAssoc() {
 		if ( !$this->hasExecuted ) $this->execute();
 
-		return $this->stmt->fetch(\PDO::FETCH_OBJ, \PDO::FETCH_ORI_ABS, $this->cursorLocation++);
+		return $this->stmt->fetch(\PDO::FETCH_ASSOC, \PDO::FETCH_ORI_ABS, $this->cursorLocation++);
 	}
 
 	/**
@@ -184,7 +184,7 @@ class PDOResultSet implements Contract\Database\IResultSet
 		
 		$numCount = 1;
 		foreach ( $this->queryArgs as $key => $value ) {
-			$dataType = PDO::PARAM_STR;
+			$dataType = \PDO::PARAM_STR;
 			if ( is_int($value) ) $dataType = \PDO::PARAM_INT;
 			if ( is_bool($value) ) $dataType = \PDO::PARAM_BOOL;
 			if ( is_null($value) ) $dataType = \PDO::PARAM_NULL;

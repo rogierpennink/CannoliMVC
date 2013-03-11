@@ -42,7 +42,8 @@ class MySQLPDODatabaseConnection extends PDODatabaseConnection
 	 * @return IResultSet
 	 */
 	protected function createResultSetFromQuery($sql, array $queryArgs) {
-		$resultSet = new MySQLPDOResultSet($this->pdo, $sql, $queryArgs);
+		$resultSet = new MySQLPDOResultSet();
+		$resultSet->construct($this->pdo, $sql, $queryArgs);
 
 		return $resultSet;
 	}

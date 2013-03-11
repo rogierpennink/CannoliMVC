@@ -21,6 +21,6 @@ interface IDatabaseConnection
 	function getDbName();
 
 	// 
-	function query($sql, array $args = array());
+	function query($sql);
 }
 ?>
