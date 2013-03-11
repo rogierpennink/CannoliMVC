@@ -1,8 +1,9 @@
 <?php
-namespace Cannoli\Framework\Core\Database;
+namespace Cannoli\Framework\Plugin\CannoliMySQLPDO;
 
-use Cannoli\Framework\Core\Exception,
-	Cannoli\Framework\Core\Plugin\Contracts\Database;
+use Cannoli\Framework\Contract,
+	Cannoli\Framework\Core\Exception,
+	Cannoli\Framework\Core\Plugin;
 
 /**
  * A default implementation of the IDatabaseConnection interface. Database
@@ -13,7 +14,7 @@ use Cannoli\Framework\Core\Exception,
  * @author Rogier Pennink
  * @category Database
  */
-abstract class PDODatabaseConnection implements Database\IDatabaseConnection
+abstract class PDODatabaseConnection implements Contract\Database\IDatabaseConnection
 {
 	protected $pdo;
 
@@ -28,10 +29,6 @@ abstract class PDODatabaseConnection implements Database\IDatabaseConnection
 	private $pass;
 
 	private $dbName;
-
-	public function __construct() {
-		$this->reset();
-	}
 
 	public function reset() {
 		$this->dsn 			= "";
@@ -217,8 +214,13 @@ abstract class PDODatabaseConnection implements Database\IDatabaseConnection
 	 * @return IResultSet
 	 * @throws DatabaseNotConnectedException
 	 */
-	public function query($sql, array $args = array()) {
+	public function query($sql) {
 		$this->checkIfConnected();
+
+		$args = func_get_args();
+		if ( count($args) > 1 ) {
+			array_shift($args);
+		}
 
 		$resultSet = $this->createResultSetFromQuery($sql, $args);
 		$resultSet->execute();
@@ -236,7 +238,8 @@ abstract class PDODatabaseConnection implements Database\IDatabaseConnection
 	 * @return IResultSet
 	 */
 	protected function createResultSetFromQuery($sql, array $queryArgs) {
-		$resultSet = new PDOResultSet($this->pdo, $sql, $queryArgs);
+		$resultSet = new PDOResultSet();
+		$resultSet->construct($this->pdo, $sql, $queryArgs);
 
 		return $resultSet;
 	}
@@ -250,6 +253,10 @@ abstract class PDODatabaseConnection implements Database\IDatabaseConnection
 	 */
 	protected function setDSN($dsn) {
 		$this->dsn = $dsn;
+	}
+
+	protected function initialize() {
+		$this->reset();
 	}
 
 	/**

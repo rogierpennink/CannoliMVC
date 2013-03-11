@@ -1,7 +1,8 @@
 <?php
 namespace Cannoli\Framework\Core\Plugin;
 
-use Cannoli\Framework\Core\Configuration,
+use Cannoli\Framework\Application,
+	Cannoli\Framework\Core\Configuration,
 	Cannoli\Framework\Core\Exception;
 
 // TODO: This file needs to extract more than just the domain from the plugin configuration file,
@@ -17,8 +18,18 @@ class PluginContainer
 
 	private $path;
 
-	public function __construct($config) {
+	private $app;
+
+	public function __construct($config, Application &$app) {
+		$this->app = $app;
+
 		$this->parse($config);
+
+		// An exception will have been thrown if something went wrong, so
+		// bind the classname to itself in singleton scope
+		if ( !is_null($this->getClass()) ) {
+			$app->getIocContainer()->bind($this->getClass())->to($this->getClass())->inSingletonScope();
+		}
 	}
 
 	/**
@@ -58,6 +69,36 @@ class PluginContainer
 	}
 
 	/**
+	 * If the domain's class name has been specified to be null, it is assumed that
+	 * no plugin class can be instantiated. If the domain's class name is not null,
+	 * the type may still be uninstantiable, but that would be a configuration error.
+	 *
+	 * @access public
+	 * @return bool 		
+	 */
+	public function isInstantiable() {
+		return !is_null($this->domain->class);
+	}
+
+	/**
+	 * Triggers the requested event method on the plugin instance. If no instance
+	 * can be constructed, this method fails silently.
+	 *
+	 * @access public
+	 * @param $event 		The name of the event method
+	 * @param $args 		The optional parameters to pass to the event method
+	 * @return mixed 		Passes the event method's output back to caller
+	 */
+	public function trigger($event, array $args = array()) {
+		if ( ($inst = $this->getInstance()) == null ) return;
+
+		// TODO: IMPORTANT!
+		if ( method_exists($inst, $event) ) {
+			return call_user_func_array(array($inst, $event), $args);
+		}
+	}
+
+	/**
 	 * Returns the instantiated PluginBase-derived class
 	 * 
 	 * If the plugin instance has not yet been loaded, this method will create it.
@@ -67,12 +108,18 @@ class PluginContainer
 	 * @access public
 	 * @return object 		The plugin's class instance
 	 */
-	public function &getInstance() {
-		$callable = array($this->getClass(), "getInstance");
-		if ( ($instance = call_user_func($callable)) === false ) {
-			throw new Exception\Plugin\PluginClassLoaderException("Failed call to \"". $this->getClass() ."::getInstance()\"");
-		}
-		return $instance;
+	public function getInstance() {
+		if ( $this->getClass() == null ) return;
+		return $this->app->getIocContainer()->get($this->getClass());
+		// $callable = array($this->getClass(), "getInstance");
+		// if ( ($instance = call_user_func($callable)) === false ) {
+		// 	throw new Exception\Plugin\PluginClassLoaderException("Failed call to \"". $this->getClass() ."::getInstance()\"");
+		// }
+		// return $instance;
+	}
+
+	public function getContractInstance() {
+
 	}
 
 	/**
@@ -109,8 +156,8 @@ class PluginContainer
 
 	private function validateAndUpdateDomain($domain) {
 		// Regular expressions for validation
-		$idRegex = "/^[a-zA-Z_]+[a-zA-Z0-9_]+$/";
-		$nameRegex = "/^[a-zA-Z0-9\s_\-\.,;\:]{3,30}$/";
+		$idRegex = "/^[a-zA-Z_]+[a-zA-Z0-9_\.\-]+$/";
+		$nameRegex = "/^[a-zA-Z0-9\s_\-\.,;\:]{3,50}$/";
 
 		if ( empty($domain->id) || !preg_match($idRegex, $domain->id) ) {
 			throw new Exception\Plugin\PluginBadConfigurationException("Invalid domain id (Regex: $idRegex).");

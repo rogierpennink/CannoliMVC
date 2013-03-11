@@ -33,7 +33,7 @@ class BindingTarget extends NamespacedTypeNameContainer
 	// TODO: maybe abstract out the difference between a closure and a raw typename?
 	// Otherwise the IOC container has to check what type of bindingtarget this is and
 	// that shouldn't really be the ioc container's responsibility.
-	public function to($typeName) {
+	public function &to($typeName) {
 		if ( $typeName instanceof \Closure ) {
 			$this->isClosure = true;
 			$this->closure = $typeName;

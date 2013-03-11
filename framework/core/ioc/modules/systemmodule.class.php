@@ -15,6 +15,11 @@ class SystemModule extends BindingModule
 
 		$this->setNamespace("Cannoli\Framework\Core\Plugin");
 		$this->bind("PluginManager")->to("PluginManager")->inSingletonScope();
+
+		$this->setNamespace("Cannoli\Framework\Core\Configuration");
+		$this->bind("ConfigurationManager")->to(function() {
+			return Application::getInstance()->getConfigurationManager();
+		});
 	}
 }
 ?>

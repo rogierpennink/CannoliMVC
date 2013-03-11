@@ -1,5 +1,5 @@
 <?php
-namespace Cannoli\Framework\Core\Plugin\Contracts\Database;
+namespace Cannoli\Framework\Contract\Database;
 
 interface IDatabaseConnectionManager
 {
@@ -12,5 +12,9 @@ interface IDatabaseConnectionManager
 	function hasConnection($id);
 
 	function getDatabaseConnectionIds();
+
+	function getActiveConnection();
+
+	function setActive($id);
 }
 ?>

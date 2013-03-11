@@ -13,11 +13,11 @@ class IocBindingRegistrationException extends \Exception
 		$this->implementation = $implementation;
 	}
 
-	public getInterface() {
+	public function getInterface() {
 		return $this->interface;
 	}
 
-	public getImplementation() {
+	public function getImplementation() {
 		return $this->implementation;
 	}
 }

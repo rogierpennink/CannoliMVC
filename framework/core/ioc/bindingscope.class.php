@@ -23,12 +23,12 @@ class BindingScope
 		return $this->instantiationStrategy;
 	}
 
-	public function inTransientScope() {
-		$this->instantiationStrategy = new Scope\TransientInstantiationStrategy();
+	public function inTransientScope(\Closure $closure = null) {
+		$this->instantiationStrategy = new Scope\TransientInstantiationStrategy($closure);
 	}
 
-	public function inSingletonScope() {
-		$this->instantiationStrategy = new Scope\SingletonInstantiationStrategy();
+	public function inSingletonScope(\Closure $closure = null) {
+		$this->instantiationStrategy = new Scope\SingletonInstantiationStrategy($closure);
 	}
 }
 ?>
