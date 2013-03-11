@@ -163,15 +163,6 @@ class PluginManager extends Utility\ConfigurableClass
 		return $requestedDeclaration;
 	}
 
-	public function getInstanceOfDeclaration($contract) {
-		$declaration = $this->getDeclaration($contract);
-		if ( $declaration === false ) {
-			throw new Exception\FrameworkException("Could not instantiate database connection manager: no contract declaration found.");
-		}
-		$clsName = $this->addContractNamespace($contract);
-		return call_user_func(array($clsName, "getInstance"));
-	}
-
 	/**
 	 * Notifies registered plugins that the onBeforeRouting phase has
 	 * been reached.
