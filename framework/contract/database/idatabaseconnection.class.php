@@ -22,5 +22,7 @@ interface IDatabaseConnection
 
 	// 
 	function query($sql);
+
+	function select($table, array $conditions = array(), array $ordering = array(), $limitFrom = 0, $limitAmount = -1);
 }
 ?>
