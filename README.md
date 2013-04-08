@@ -8,3 +8,4 @@ Use Cannoli MVC for rapid application development in PHP. Cannoli MVC is highly 
 
 * Inversion of control through dependency injection
 * Extensibility through plugins
+* Fully namespaced
