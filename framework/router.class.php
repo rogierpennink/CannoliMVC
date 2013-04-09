@@ -49,8 +49,8 @@ class Router
 		
 		//TODO: Controller base class, methods like index(), error404() etc. with default implementations
 
-		/* Update the controller class name. */
-		if ( $strController == "" || ($controller = $this->getController("Application\\Controller\\". ucfirst($strController) ."Controller")) == null ) {
+		/* In the case that the root URL was specified - no controller specified at all. */
+		if ( $strController == "" ) {
 			/* Fetch the default controller */
 			if ( $this->defaultController == "" ) {
 				/* Fetch the controller base class. */
@@ -65,6 +65,17 @@ class Router
 					throw new Exception\RouteException("No Controller could be found, check your configuration!");
 				}
 			}
+		}
+		/* In the case that the requested controller was not found. */
+		elseif ( ($controller = $this->getController("Application\\Controller\\". ucfirst($strController) ."Controller")) == null ) {
+			/* Fetch the controller base class. */
+			$controller = $this->getController("Cannoli\\Framework\\Controller\\Controller");
+			if ( empty($controller) ) {
+				/* Could not find default controller, check configuration. */
+				throw new Exception\RouteException("No Controller could be found, check your configuration!");
+			}
+
+			return $controller->_http_404();
 		}
 		
 		/**
@@ -90,8 +101,13 @@ class Router
 			/* Check if we can run the requested method on the controller. */
 			if ( !method_exists($controller, $strMethod) ) {
 				/* Since we know we have a Controller-derived instance, call the 404 method */
-				return $controller->http_404();
+				return $controller->_http_404();
 			}
+		}
+
+		/* If the method name starts with an underscore, it must not be associated with a URL. */
+		if ( substr($strMethod, 0, 1) == "_" ) {
+			return $controller->_http_403();
 		}
 		
 		/* No special cases have occurred, method must be valid, so call it. */
@@ -112,7 +128,7 @@ class Router
 			//$controller = new $strController($this->app);
 			$controller = $this->app->getIocContainer()->getInstance($strController);
 			// This is where application-level initialization should occur
-			$controller->initialize();
+			$controller->_initialize();
 			
 			/* Check that the controller is an instance of Controller. */
 			if ( !($controller instanceof BaseController) )
