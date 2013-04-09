@@ -41,12 +41,19 @@ class SessionCache implements Core\ICache
 		session_destroy();
 	}
 		
-	public function getSessionID() {
+	public function getSessionId() {
 		return $this->session_id;
 	}
 	
 	public function getSessionName() {
 		return $this->session_name;
+	}
+
+	public function setSessionId($id) {
+		if ( $id != $this->session_id ) {
+			session_id($id);
+			$this->session_id = $id;
+		}
 	}
 }
 ?>
