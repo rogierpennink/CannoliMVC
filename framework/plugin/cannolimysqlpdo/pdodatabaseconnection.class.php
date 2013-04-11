@@ -222,6 +222,7 @@ abstract class PDODatabaseConnection implements Contract\Database\IDatabaseConne
 			array_shift($args);
 		}
 
+
 		$resultSet = $this->createResultSetFromQuery($sql, $args);
 		$resultSet->execute();
 		return $resultSet;

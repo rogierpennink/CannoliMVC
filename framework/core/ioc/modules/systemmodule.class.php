@@ -2,7 +2,8 @@
 namespace Cannoli\Framework\Core\Ioc\Modules;
 
 use Cannoli\Framework\Application,
-	Cannoli\Framework\Core\Ioc\BindingModule;
+	Cannoli\Framework\Core\Ioc\BindingModule,
+	Cannoli\Framework\Core\Net;
 
 class SystemModule extends BindingModule
 {
@@ -20,6 +21,11 @@ class SystemModule extends BindingModule
 		$this->bind("ConfigurationManager")->to(function() {
 			return Application::getInstance()->getConfigurationManager();
 		});
+
+		$this->setNamespace("Cannoli\\Framework\\Core\\Net");
+		$this->bind("HttpWebRequest")->to(function() {
+			return Net\HttpWebRequest::getCurrent();
+		})->inSingletonScope();
 	}
 }
 ?>
