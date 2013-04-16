@@ -12,8 +12,9 @@ class JsonView implements Core\IRenderable
 	
 	protected $templateFile;
 	
-	public function __construct() {
+	public function __construct(array $parameters = array()) {
 		$this->clear();
+		$this->parameters = $parameters;
 	}
 	
 	public function setTemplate($template) {
