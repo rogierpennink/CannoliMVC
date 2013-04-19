@@ -134,11 +134,17 @@ class Application extends Utility\ConfigurableSingleton
 	 * @return object			An instance of the URL class.
 	 */
 	public function getRequestedURL() {
-		/* First construct the complete URL string from server variables. */
-		$urlString = ((!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] != "off") ? "https" : "http")
+		if ( php_sapi_name() == 'cli' || defined('STD_IN') ) {
+			$args = array_slice($_SERVER['argv'], 1);
+			$urlString = "console://cli" . ($args ? '/' . implode('/', $args) : '');
+		}
+		else {
+			/* First construct the complete URL string from server variables. */
+			$urlString = ((!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] != "off") ? "https" : "http")
 					 ."://". $_SERVER["HTTP_HOST"] .":". $_SERVER["SERVER_PORT"] . $_SERVER["REQUEST_URI"];
-		
-		/* Pass it to the URI class to parse it. */
+		}
+
+		/* Pass it to the URI class to parse it. */	
 		$uri = new Utility\URL($urlString);
 		return $uri;
 	}

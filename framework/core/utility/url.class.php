@@ -26,12 +26,12 @@ class URL
 		$this->reset();
 		
 		/* Regular expression. */
-		$regExp = "/^([a-z]+\:){0,1}\/\/([a-zA-Z0-9\-\.]+)(:\d+){0,1}(\/[^\?]+){0,1}(\?[a-zA-Z0-9=%\-\_\.\/&]+){0,1}(#[a-zA-Z0-9=%\-\_\.\/]+){0,1}/";
+		$regExp = "/^([a-z]+\:){0,1}\/\/([a-zA-Z0-9\-\.]+)(:\d*){0,1}(\/[^\?]+){0,1}(\?[a-zA-Z0-9=%\-\_\.\/&]+){0,1}(#[a-zA-Z0-9=%\-\_\.\/]+){0,1}/";
 		if ( preg_match_all($regExp, urldecode($urlString), $matches, PREG_SET_ORDER) ) {
 			$data = $matches[0];
 			$this->protocol = substr($data[1], 0, strlen($data[1]) - 1);
 			$this->host = $data[2];
-			$this->port = intval(substr($data[3], 0, strlen($data[3]) - 1));
+			$this->port = !empty($data[3]) ? intval(substr($data[3], 0, strlen($data[3]) - 1)) : "";
 			$this->path = !empty($data[4]) ? substr($data[4], 1) : "";
 			$this->segments = explode("/", trim($this->path, "/"));
 			$this->querystring = !empty($data[5]) ? new QueryString(substr($data[5], 1)) : new QueryString();

@@ -22,7 +22,12 @@ class HttpWebRequest
 	 * @return mixed 			HttpWebRequest object, false if no web request context is available.
 	 */
 	public static function getCurrent() {
-		if ( defined('STDIN') ) return false;
+		// We have to return a bogus webrequest because if we return false,
+		// controllers won't be instantiated
+		// TODO: this is bad, it seems controller construction should be CLI/Request independent
+		// So it probably needs to be updated so that controllers don't depend on the webrequest
+		// anymore
+		//if ( defined('STDIN') ) return null;
 
 		static $webRequest = null;
 
