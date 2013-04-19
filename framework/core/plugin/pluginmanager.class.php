@@ -164,26 +164,15 @@ class PluginManager extends Utility\ConfigurableClass
 
 	/**
 	 * Notifies registered plugins that the onAfterRouting phase has
-	 * been reached. Plugins can return a different IRenderable if they so desire.
+	 * been reached.
 	 *
 	 * @access public
-	 * @param IRenderable 			The renderable object that routing always results in
-	 * @return IRenderable			
+	 * @return void
 	 */
-	public function onAfterRouting(Core\IRenderable &$renderable) {
-		$viewCollection = new View\ViewCollection();
-
+	public function onAfterRouting() {
 		foreach ( $this->getInstantiablePlugins() as $pluginContainer ) {
-			$newRenderable = $pluginContainer->trigger("onAfterRouting", array($renderable));
-			if ( !($newRenderable instanceof Core\IRenderable) ) {
-				throw new \UnexpectedValueException("Return value for onAfterRouting on plugin: \"{$pluginContainer->getId()}\" must be of type IRenderable.");
-			}
-			$viewCollection->add($newRenderable);
+			$pluginContainer->trigger("onAfterRouting");
 		}
-		
-		// If there are no plugins we still need to render the original renderable
-		if ( $viewCollection->count() == 0 ) return $renderable;
-		return $viewCollection;
 	}
 
 	/**

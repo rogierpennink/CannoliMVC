@@ -114,16 +114,17 @@ class Application extends Utility\ConfigurableSingleton
 		$renderable = $this->router->route();
 
 		// OnAfterRouting call should go here
-		$renderable = $this->onAfterRouting($renderable);
-		
-		$output = $renderable->render();
+		$this->onAfterRouting();
 
-		// Onbeforerender call should go here
-		// $output = onbeforerender($output);
+		if ( !empty($renderable) ) {
+			$this->onBeforeRendering($renderable);
 
-		echo $output;
+			$output = $renderable->render();
 
-		// Onafterrender call should go here
+			echo $output;
+
+			//$this->onAfterRendering($renderable);
+		}
 	}
 	
 	/**
@@ -384,14 +385,18 @@ class Application extends Utility\ConfigurableSingleton
 		$pm->onBeforeRouting();
 	}
 
-	private function OnAfterRouting(Core\IRenderable &$renderable) {
+	private function OnAfterRouting() {
 		// System updates/code first
 
 		// Notify plugins next
 		$pm = &$this->getPluginManager();
-		$newRenderable = $pm->onAfterRouting($renderable);
+		$newRenderable = $pm->onAfterRouting();
 
 		return $newRenderable;
+	}
+
+	private function OnBeforeRendering(Core\IRenderable &$renderable) {
+
 	}
 
 	/**
