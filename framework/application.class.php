@@ -60,11 +60,8 @@ class Application extends Utility\ConfigurableSingleton
 		$this->loadConfiguration();
 		
 		$this->session = new Core\Session\SessionCache();
-		$this->router = new Router($this);
-		$this->router->setDefaultController($this->config("Cannoli.Framework.Controller", "defaultController", ""));
-		if ( ($defaultController = $this->config("Cannoli.Application.Controller", "defaultController", "")) != "" ) {
-			$this->router->setDefaultController($defaultController);
-		}
+
+		$this->createRouter();
 	}
 
 	/**
@@ -79,11 +76,10 @@ class Application extends Utility\ConfigurableSingleton
 	public function getConfigurationDomains() {
 		return array(
 			"Cannoli.Framework.Autoload",
-			"Cannoli.Framework.Controller",
 			"Cannoli.Framework.Plugins",
 			"Cannoli.Framework.Ioc",
 			"Cannoli.Application.Ioc",
-			"Cannoli.Application.Controller",
+			"Cannoli.Application.Routing",
 			"Cannoli.Application.Autoload"
 		);
 	}
@@ -125,6 +121,18 @@ class Application extends Utility\ConfigurableSingleton
 
 			//$this->onAfterRendering($renderable);
 		}
+	}
+
+	/**
+	 *
+	 * @access public
+	 */
+	public function executeRequest(IRequestContext &$context, Controller &$controller, $method, array $args = array()) {
+		if ( !method_exists($controller, $method) ) {
+			throw new Exception\RouteException("Controller method \"". $method ."\" was not found in ". get_class($controller));
+		}
+
+		$result = call_user_func_array(array($controller, $method), $args);
 	}
 	
 	/**
@@ -317,6 +325,34 @@ class Application extends Utility\ConfigurableSingleton
 			return new $el();
 		}, $modules);
 		$this->iocContainer = new Ioc\IocContainer($modules);
+	}
+
+	/**
+	 * Creates the Router instance that will translate requests into controller
+	 * method calls.
+	 *
+	 * @access private
+	 * @return void
+	 */
+	private function createRouter() {
+		$this->router = new Router($this);
+
+		// Set configured defaults if they've been set
+		if ( ($defaultController = $this->config("Cannoli.Application.Routing", "defaultController", "")) != "" ) {
+			$this->router->setDefaultController($defaultController);
+		}
+		if ( ($defaultMethod = $this->config("Cannoli.Application.Routing", "defaultMethod", "")) != "" ) {
+			$this->router->setDefaultMethod($defaultMethod);
+		}
+
+		// Add configured routes to the router
+		$routes = $this->config("Cannoli.Application.Routing", "routes", array());
+		foreach ( $routes as $route ) {
+			if ( !is_array($route) || count($route) != 2 ) {
+				throw new Exception\RouteException("Invalid route configured in Cannoli.Application.Routing::routes, routes should be arrays with 2 elements each.");
+			}
+			$this->router->addRoute($route[0], $route[1]);
+		}
 	}
 
 	/**

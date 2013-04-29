@@ -12,16 +12,16 @@ class Router
 	protected $defaultController;
 	protected $defaultMethod;
 	
-	protected $paths;
+	protected $routes;
 	
 	public function __construct(Application &$app) {
 		$this->app = $app;
 		
 		/* Set default controller and methods to their default values. */
-		$this->defaultController = "Cannoli";
-		$this->defaultMethod = "index";
+		$this->defaultController = "";
+		$this->defaultMethod = "";
 		
-		$this->paths = array();
+		$this->routes = array();
 	}
 	
 	public function setDefaultController($controller) {
@@ -30,6 +30,44 @@ class Router
 	
 	public function setDefaultMethod($method) {
 		$this->defaultMethod = $method;
+	}
+
+	/**
+	 * Add a route to the internal custom routes array. A route can be seen as a
+	 * virtual path. It does not actually exist but it is routed to an existing
+	 * resource. Routes always take precedence before anything else, so it is
+	 * possible to make resources inaccessible if a route with the same path is
+	 * added.
+	 *
+	 * @access public
+	 * @param $path 			The virtual path that must be resolved
+	 * @param $resource 		The actual, existing, resource that must be associated with the path
+	 * @return void
+	 */
+	public function addRoute($path, $resource) {
+		if ( isset($this->routes[$path]) ) {
+			throw new Exception\RouteException("Cannot add route with path \"$path\". Path already exists.");
+		}
+
+		/* Store without trailing/starting slashes (makes it easier to split into segments) */
+		$path = trim($path, "/");
+		$resource = trim($resource, "/");
+
+		$this->routes[$path] = $resource;
+	}
+
+	public function hasRoute($path) {
+		$path = trim($path, "/");
+
+		return isset($this->routes[$path]);
+	}
+
+	public function getRoutedPath($path) {
+		if ( !$this->hasRoute($path) ) return $path;
+
+		$path = trim($path, "/");
+
+		return $this->routes[$path];
 	}
 	
 	/**
@@ -40,8 +78,14 @@ class Router
 		/* Get the requested URL from $app */
 		$url = $this->app->getRequestedURL();
 
-		/* We only use path info, break it up into parts first. */
-		$segments = $url->getSegments();
+		/* Get the path from the url and check if a route has been defined for it. */
+		if ( $this->hasRoute($url->getPath()) ) {
+			$segments = explode("/", $this->getRoutedPath($url->getPath()));
+		}
+		else {
+			/* No route defined, get segments from the requested URL. */
+			$segments = $url->getSegments();	
+		}
 		
 		// TODO: Take subdirectories into account here
 		$strController = trim(empty($segments) ? $this->defaultController : $segments[0]);
@@ -92,7 +136,10 @@ class Router
 		if ( $strMethod == "" ) {
 			/* Check for the presence of the default method. */
 			if ( !method_exists($controller, $this->defaultMethod) ) {
-				return $controller->index();
+				if ( method_exists($controller, "index") )
+					return $controller->index();
+				else
+					return $controller->_http_404();
 			}
 			
 			return $controller->{$this->defaultMethod}();
