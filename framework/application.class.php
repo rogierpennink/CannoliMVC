@@ -143,7 +143,7 @@ class Application extends Utility\ConfigurableSingleton
 	 * @return object			An instance of the URL class.
 	 */
 	public function getRequestedURL() {
-		if ( php_sapi_name() == 'cli' || defined('STD_IN') ) {
+		if ( php_sapi_name() == 'cli' || defined('STDIN') ) {
 			$args = array_slice($_SERVER['argv'], 1);
 			$urlString = "console://cli" . ($args ? '/' . implode('/', $args) : '');
 		}

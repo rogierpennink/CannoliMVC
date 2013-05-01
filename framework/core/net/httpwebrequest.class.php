@@ -5,7 +5,7 @@ class HttpWebRequest
 {
 	private $verb;
 
-	private $headers;
+	private $headers = array();
 	
 	private $protocol;
 
