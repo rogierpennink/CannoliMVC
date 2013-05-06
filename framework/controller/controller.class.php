@@ -3,7 +3,7 @@ namespace Cannoli\Framework\Controller;
 
 use Cannoli\Framework\Application,
 	Cannoli\Framework\Core\Exception\Net\HttpException,
-	Cannoli\Framework\Core\Net,
+	Cannoli\Framework\Core\Context,
 	Cannoli\Framework\View;
 
 class Controller
@@ -11,10 +11,27 @@ class Controller
 	/* Protected member fields. */
 	protected $app;
 
-	public final function __construct(Application &$app, Net\HttpWebRequest &$currentRequest) {
+	/**
+	 * @var Cannoli\Framework\Core\Context\OperationContext
+	 */
+	protected $context;
+
+	protected $request;
+
+	protected $input;
+
+	protected $response;
+
+	public final function __construct(Application &$app) {
 		$this->app = $app;
 
-		$this->request = $currentRequest;
+		$this->context 	= $this->app->getOperationContext();
+
+		$this->request 	= $this->context->getRequest();
+
+		$this->input 	= $this->context->getInput();
+
+		$this->response = $this->context->getResponse();
 	}
 
 	public function _initialize() {

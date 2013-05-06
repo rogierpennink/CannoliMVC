@@ -14,6 +14,7 @@ require_once dirname(__FILE__) ."/core/cache/appsettings.class.php";
 
 use Cannoli\Framework\Core,
 	Cannoli\Framework\Core\Configuration,
+	Cannoli\Framework\Core\Context,
 	Cannoli\Framework\Core\Exception,
 	Cannoli\Framework\Core\Ioc,
 	Cannoli\Framework\Core\Ioc\Modules,
@@ -156,6 +157,18 @@ class Application extends Utility\ConfigurableSingleton
 		/* Pass it to the URI class to parse it. */	
 		$uri = new Utility\URL($urlString);
 		return $uri;
+	}
+
+	/**
+	 * Proxy for the OperationContext::getCurrent method which establishes the
+	 * current operation's context by inspecting certain server variables and
+	 * defines.
+	 *
+	 * @access public
+	 * @return OperationContext A OperationContext-derived object instance
+	 */
+	public function getOperationContext() {
+		return Context\OperationContext::getCurrent();
 	}
 
 	/**
