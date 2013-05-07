@@ -6,22 +6,28 @@ use Cannoli\Framework\Core\Net,
 
 class HttpOperationContext extends OperationContext
 {
-	private $current = null;
+	private static $current = null;
 
 	public static function getCurrent() {
 		if ( empty(self::$current) ) {
 			self::$current = new HttpOperationContext(Net\HttpWebRequest::getCurrent(),
-														HttpInputManager::getCurrent(),
+														HttpInputManager::getInstance(),
 														new Net\HttpWebResponse());
 		}
 
 		return self::$current;
 	}
 
-	public function __construct(Net\HttpWebRequest $request, HttpInputManager $input, HttpWebResponse $response) {
-		parent::__construct(RequestContext::TYPE_HTTP);
+	private $request;
 
-		$this->requst  	= $request;
+	private $response;
+
+	private $input;
+
+	public function __construct(Net\HttpWebRequest $request, HttpInputManager $input, Net\HttpWebResponse $response) {
+		parent::__construct(OperationContext::TYPE_HTTP);
+
+		$this->request 	= $request;
 
 		$this->input 	= $input;
 
@@ -43,16 +49,15 @@ class HttpOperationContext extends OperationContext
 	}
 
 	public function getRequest() {
-		// Let each "part" of the current context figure out its own state
-		return Net\HttpWebRequest::getCurrent();
+		return $this->request;
 	}
 
 	public function getInput() {
-		return new HttpInputManager();
+		return $this->input;
 	}
 
 	public function getResponse() {
-		return null;
+		return $this->response;
 	}
 }
 ?>

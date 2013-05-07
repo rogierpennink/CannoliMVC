@@ -15,7 +15,7 @@ final class HttpMethod
 
 	const OPTIONS 	= "OPTIONS";
 
-	const TRACE 		= "TRACE";
+	const TRACE 	= "TRACE";
 
 	const CONNECT 	= "CONNECT";
 

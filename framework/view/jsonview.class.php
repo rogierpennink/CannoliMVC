@@ -1,12 +1,10 @@
 <?php
 namespace Cannoli\Framework\View;
 
-use Cannoli\Framework\Core;
-
 /**
  * TODO: this class and View need to inherit from a common base class
  */
-class JsonView implements Core\IRenderable
+class JsonView extends Renderable
 {
 	protected $parameters;
 	

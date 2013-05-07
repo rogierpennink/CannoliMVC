@@ -9,10 +9,16 @@ if ( defined('STDIN') ) {
 	chdir(dirname(__FILE__));
 }
 
+define
 /**
  * Define path variables. 
  */
 define('PATH_SYSTEM', 'framework');
+
+if (realpath(PATH_SYSTEM) !== FALSE)
+{
+	$system_path = realpath($system_path).'/';
+}
 
 define('PATH_CONFIG', PATH_SYSTEM."/config");
 

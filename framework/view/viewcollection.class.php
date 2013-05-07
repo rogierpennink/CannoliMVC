@@ -1,8 +1,6 @@
 <?php
 namespace Cannoli\Framework\View;
 
-use Cannoli\Framework\Core\IRenderable;
-
 /**
  * ViewCollection class
  *
@@ -15,7 +13,7 @@ use Cannoli\Framework\Core\IRenderable;
  * @author 		Rogier Pennink
  * @category	View
  */
-class ViewCollection implements IRenderable
+class ViewCollection extends Renderable
 {
 	private $renderables = array();
 

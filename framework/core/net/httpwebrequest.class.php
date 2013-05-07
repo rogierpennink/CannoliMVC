@@ -13,6 +13,8 @@ class HttpWebRequest
 
 	private $resource;
 
+	private $body = "";
+
 	/**
 	 * If the code is evaluated in the context of a web request, the static getCurrent
 	 * method will return the current request's HttpWebRequest object for easy access
@@ -50,6 +52,10 @@ class HttpWebRequest
 
 			// Get resource
 			$webRequest->resource = $_SERVER["REQUEST_URI"];
+
+			// Read raw request body from php://input (ignore errors)
+			$body = @file_get_contents("php://input");
+			$webRequest->body = trim($body !== false ? $body : "");
 		}
 
 		return $webRequest;
@@ -174,6 +180,60 @@ class HttpWebRequest
 	public function getVerb() {
 		return strtoupper($this->verb);
 	}
+
+	/**
+	 * Fast access to verb GET check, compares verb value against HttpMethod::GET constant
+	 *
+	 * @access public
+	 * @return boolean			Whether or not the method for this request was GET
+	 */
+	public function isGET() {
+		return $this->getVerb() == HttpMethod::GET;
+	}
+
+	/**
+	 * Fast access to verb POST check, compares verb value against HttpMethod::POST constant
+	 *
+	 * @access public
+	 * @return boolean			Whether or not the method for this request was POST
+	 */
+	public function isPOST() {
+		return $this->getVerb() == HttpMethod::POST;
+	}
+
+	/**
+	 * Fast access to verb PUT check, compares verb value against HttpMethod::PUT constant
+	 *
+	 * @access public
+	 * @return boolean			Whether or not the method for this request was PUT
+	 */
+	public function isPUT() {
+		return $this->getVerb() == HttpMethod::PUT;
+	}
+
+	/**
+	 * Fast access to verb DELETE check, compares verb value against HttpMethod::DELETE constant
+	 *
+	 * @access public
+	 * @return boolean			Whether or not the method for this request was DELETE
+	 */
+	public function isDELETE() {
+		return $this->getVerb() == HttpMethod::DELETE;
+	}
+
+	/**
+	 * Return the contents of the HTTP request's body. Since the request body is read from the
+	 * php://input stream, this method is the preferred way of accessing request data since in
+	 * the case of a PUT request (or maybe other requests too), php://input is only readable
+	 * once. This method caches the request body so it can be accessed more than once.
+	 *
+	 * @access public
+	 * @return string 			The request body
+	 */
+	public function getBody() {
+		return $this->body;
+	}
+
 
 	/**
 	 * PHP Magic toString method. Returns the http request in raw text format, as

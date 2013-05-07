@@ -14,7 +14,7 @@ abstract class OperationContext
 	public static function getCurrent() {
 		if ( empty(self::$curContext) ) {
 			if ( php_sapi_name() == 'cli' || defined('STDIN') ) {
-				self::$curContext = new CliOperationContext();
+				self::$curContext = CliOperationContext::getCurrent();
 			}
 			else {
 				self::$curContext = HttpOperationContext::getCurrent();

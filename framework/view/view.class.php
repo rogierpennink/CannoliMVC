@@ -1,9 +1,7 @@
 <?php
 namespace Cannoli\Framework\View;
 
-use Cannoli\Framework\Core;
-
-class View implements Core\IRenderable
+class View extends Renderable
 {
 	protected $parameters;
 	

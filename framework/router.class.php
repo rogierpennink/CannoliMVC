@@ -3,6 +3,7 @@ namespace Cannoli\Framework;
 
 use Application\Controller,
 	Cannoli\Framework\Controller\Controller as BaseController,
+	Cannoli\Framework\Core\Context,
 	Cannoli\Framework\Core\Exception;
 
 class Router
@@ -69,14 +70,23 @@ class Router
 
 		return $this->routes[$path];
 	}
-	
+
 	/**
 	 * Uses the requested URL resource as a mapping to a method in a Controller-derived
-	 * class.
+	 * class. The route method returns a RouteResult instance which contains the fully
+	 * specified controller name, the method name, and the arguments to the method.
+	 * 
+	 * @access public
+	 * @return RouteResult			The result of the routing operation
+	 * @throws RouteException
 	 */
 	public function route() {
 		/* Get the requested URL from $app */
 		$url = $this->app->getRequestedURL();
+
+		$context = $this->app->getOperationContext();
+
+		$this->getSegmentsFromContext($context);
 
 		/* Get the path from the url and check if a route has been defined for it. */
 		if ( $this->hasRoute($url->getPath()) ) {
@@ -84,7 +94,7 @@ class Router
 		}
 		else {
 			/* No route defined, get segments from the requested URL. */
-			$segments = $url->getSegments();	
+			$segments = $url->getSegments();
 		}
 		
 		// TODO: Take subdirectories into account here
@@ -162,6 +172,35 @@ class Router
 			return call_user_func_array(array($controller, $strMethod), $url->getSegments(2));
 		}
 		return $controller->{$strMethod}();
+	}
+
+	/**
+	 * Returns the array of segments from the given operation context. The reason why
+	 * this helper is in place is because the operation context can be any of a number
+	 * of different types, which means there can also be any number of different ways
+	 * to access the segments.
+	 *
+	 * @access private
+	 * @return array 		Array of segments, can be empty
+	 */
+	private function getSegmentsFromContext(Context\OperationContext &$context) {
+		if ( $context->isHttpContext() ) {
+			// This small block of code figures out the segments correctly even if cannoli
+			// mvc is installed in a subdirectory or if the url is of the format:
+			// index.php/segments/here
+			$path = $context->getRequestUrl()->getPath();
+			if ( strpos($uri, $_SERVER['SCRIPT_NAME']) === 0 ) {
+				$path = substr($uri, strlen($_SERVER['SCRIPT_NAME']));
+			}
+			elseif ( strpos($path, dirname($_SERVER['SCRIPT_NAME'])) === 0 ) {
+				$path = substr($path, strlen(dirname($_SERVER['SCRIPT_NAME'])));
+			}
+
+			return explode("/", trim($path));
+		}
+		elseif ( $context->isCliContext() ) {
+			
+		}
 	}
 
 	/**

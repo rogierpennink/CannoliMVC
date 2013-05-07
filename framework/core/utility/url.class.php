@@ -33,6 +33,7 @@ class URL
 			$this->host = $data[2];
 			$this->port = !empty($data[3]) ? intval(substr($data[3], 0, strlen($data[3]) - 1)) : "";
 			$this->path = !empty($data[4]) ? substr($data[4], 1) : "";
+			$this->path = "/". trim($this->path, "/");
 			$this->segments = explode("/", trim($this->path, "/"));
 			$this->querystring = !empty($data[5]) ? new QueryString(substr($data[5], 1)) : new QueryString();
 			$this->fragment = !empty($data[6]) ? substr($data[6], 1) : "";
