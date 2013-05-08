@@ -19,8 +19,9 @@ class TestController extends Controller
 		
 	}
 
-	public function index($recipient = "World") {
-		echo "Hello ". $recipient;
+	public function index($recipient = "World", $subject = "George W. Bush") {
+		echo "Hello ". $recipient .", how is ". $subject ." today?";
+		echo "<br />". $this->input["damn"];
 	}
 }
 ?>

@@ -86,16 +86,15 @@ class Router
 
 		$context = $this->app->getOperationContext();
 
-		$this->getSegmentsFromContext($context);
-
 		/* Get the path from the url and check if a route has been defined for it. */
 		if ( $this->hasRoute($url->getPath()) ) {
 			$segments = explode("/", $this->getRoutedPath($url->getPath()));
 		}
 		else {
 			/* No route defined, get segments from the requested URL. */
-			$segments = $url->getSegments();
+			$segments = $this->getSegmentsFromContext($context);
 		}
+		print_r($segments);
 		
 		// TODO: Take subdirectories into account here
 		$strController = trim(empty($segments) ? $this->defaultController : $segments[0]);
@@ -168,8 +167,8 @@ class Router
 		}
 		
 		/* No special cases have occurred, method must be valid, so call it. */
-		if ( $url->getSegmentCount() > 2 ) {
-			return call_user_func_array(array($controller, $strMethod), $url->getSegments(2));
+		if ( count($segments) > 2 ) {
+			return call_user_func_array(array($controller, $strMethod), array_splice($segments, 2));
 		}
 		return $controller->{$strMethod}();
 	}
@@ -189,14 +188,14 @@ class Router
 			// mvc is installed in a subdirectory or if the url is of the format:
 			// index.php/segments/here
 			$path = $context->getRequestUrl()->getPath();
-			if ( strpos($uri, $_SERVER['SCRIPT_NAME']) === 0 ) {
-				$path = substr($uri, strlen($_SERVER['SCRIPT_NAME']));
+			if ( strpos($path, $_SERVER['SCRIPT_NAME']) === 0 ) {
+				$path = substr($path, strlen($_SERVER['SCRIPT_NAME']));
 			}
 			elseif ( strpos($path, dirname($_SERVER['SCRIPT_NAME'])) === 0 ) {
 				$path = substr($path, strlen(dirname($_SERVER['SCRIPT_NAME'])));
 			}
 
-			return explode("/", trim($path));
+			return explode("/", trim($path, "/"));
 		}
 		elseif ( $context->isCliContext() ) {
 			$request = $context->getRequest();
