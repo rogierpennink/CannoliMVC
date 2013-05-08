@@ -16,11 +16,11 @@ class TestController extends Controller
 	//}
 
 	public function _initialize() {
-		echo $this->request;
+		
 	}
 
-	public function index() {
-		echo "Hello world";
+	public function index($recipient = "World") {
+		echo "Hello ". $recipient;
 	}
 }
 ?>

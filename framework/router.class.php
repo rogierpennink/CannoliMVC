@@ -199,7 +199,9 @@ class Router
 			return explode("/", trim($path));
 		}
 		elseif ( $context->isCliContext() ) {
-			
+			$request = $context->getRequest();
+
+			return $request->getArguments();
 		}
 	}
 

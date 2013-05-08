@@ -60,7 +60,12 @@ class Application extends Utility\ConfigurableSingleton
 		// Load the framework configuration
 		$this->loadConfiguration();
 		
-		$this->session = new Core\Session\SessionCache();
+		// TODO:
+		// Quick hack; session cache should probably be a member of the http
+		// operation context or something...
+		if ( $this->getOperationContext()->isHttpContext() ) {
+			$this->session = new Core\Session\SessionCache();	
+		}
 
 		$this->createRouter();
 	}

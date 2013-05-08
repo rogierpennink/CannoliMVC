@@ -9,7 +9,7 @@ if ( defined('STDIN') ) {
 	chdir(dirname(__FILE__));
 }
 
-define
+//define
 /**
  * Define path variables. 
  */
@@ -27,6 +27,8 @@ define('FILE_CONFIG', PATH_CONFIG."/framework.conf");
 define('PATH_APPLICATION', 'application');
 
 require_once "framework/application.class.php";
+
+print_r($argv);
 
 $app = Application::getInstance();
 

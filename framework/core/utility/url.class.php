@@ -3,8 +3,6 @@ namespace Cannoli\Framework\Core\Utility;
 
 require_once dirname(__FILE__) . "/querystring.class.php";
 
-header("Content-Type: text/html; charset=utf-8");
-
 class URL
 {
 	private $protocol;
