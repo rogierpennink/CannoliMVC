@@ -94,7 +94,6 @@ class Router
 			/* No route defined, get segments from the requested URL. */
 			$segments = $this->getSegmentsFromContext($context);
 		}
-		print_r($segments);
 		
 		// TODO: Take subdirectories into account here
 		$strController = trim(empty($segments) ? $this->defaultController : $segments[0]);
@@ -200,7 +199,7 @@ class Router
 		elseif ( $context->isCliContext() ) {
 			$request = $context->getRequest();
 
-			return $request->getArguments();
+			return array_keys($request->getArguments());
 		}
 	}
 

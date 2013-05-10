@@ -57,8 +57,16 @@ class CliRequest
 		return $this->isOptionSet($option) ? $this->options[$option] : false;
 	}
 
+	public function getOptions() {
+		return $this->options;
+	}
+
 	public function getLongOptionValue($longOption) {
 		return $this->isLongOptionSet($longOption) ? $this->longOptions[$longOption] : false;
+	}
+
+	public function getLongOptions() {
+		return $this->longOptions;
 	}
 
 	public function hasArgument($arg) {

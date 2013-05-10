@@ -121,12 +121,13 @@ class Application extends Utility\ConfigurableSingleton
 		if ( !empty($renderable) ) {
 			$this->onBeforeRendering($renderable);
 
-			$output = $renderable->render();
-
-			echo $output;
+			$this->getOperationContext()->getResponse()->setResponseBody($renderable);
 
 			//$this->onAfterRendering($renderable);
 		}
+
+		// Render the response
+		echo $this->getOperationContext()->getResponse()->render();
 	}
 
 	/**

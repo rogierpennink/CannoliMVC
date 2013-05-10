@@ -1,8 +1,7 @@
 <?php
 namespace Cannoli\Framework\Core\Context;
 
-class CliResponse
+class CliResponse extends Response
 {
-	
 }
 ?>
