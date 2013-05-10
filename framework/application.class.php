@@ -14,6 +14,7 @@ require_once dirname(__FILE__) ."/core/cache/appsettings.class.php";
 
 use Cannoli\Framework\Core,
 	Cannoli\Framework\Core\Configuration,
+	Cannoli\Framework\Core\Context,
 	Cannoli\Framework\Core\Exception,
 	Cannoli\Framework\Core\Ioc,
 	Cannoli\Framework\Core\Ioc\Modules,
@@ -59,12 +60,14 @@ class Application extends Utility\ConfigurableSingleton
 		// Load the framework configuration
 		$this->loadConfiguration();
 		
-		$this->session = new Core\Session\SessionCache();
-		$this->router = new Router($this);
-		$this->router->setDefaultController($this->config("Cannoli.Framework.Controller", "defaultController", ""));
-		if ( ($defaultController = $this->config("Cannoli.Application.Controller", "defaultController", "")) != "" ) {
-			$this->router->setDefaultController($defaultController);
+		// TODO:
+		// Quick hack; session cache should probably be a member of the http
+		// operation context or something...
+		if ( $this->getOperationContext()->isHttpContext() ) {
+			$this->session = new Core\Session\SessionCache();	
 		}
+
+		$this->createRouter();
 	}
 
 	/**
@@ -79,11 +82,10 @@ class Application extends Utility\ConfigurableSingleton
 	public function getConfigurationDomains() {
 		return array(
 			"Cannoli.Framework.Autoload",
-			"Cannoli.Framework.Controller",
 			"Cannoli.Framework.Plugins",
 			"Cannoli.Framework.Ioc",
 			"Cannoli.Application.Ioc",
-			"Cannoli.Application.Controller",
+			"Cannoli.Application.Routing",
 			"Cannoli.Application.Autoload"
 		);
 	}
@@ -114,16 +116,30 @@ class Application extends Utility\ConfigurableSingleton
 		$renderable = $this->router->route();
 
 		// OnAfterRouting call should go here
-		$renderable = $this->onAfterRouting($renderable);
-		
-		$output = $renderable->render();
+		$this->onAfterRouting();
 
-		// Onbeforerender call should go here
-		// $output = onbeforerender($output);
+		if ( !empty($renderable) ) {
+			$this->onBeforeRendering($renderable);
 
-		echo $output;
+			$this->getOperationContext()->getResponse()->setResponseBody($renderable);
 
-		// Onafterrender call should go here
+			//$this->onAfterRendering($renderable);
+		}
+
+		// Render the response
+		echo $this->getOperationContext()->getResponse()->render();
+	}
+
+	/**
+	 *
+	 * @access public
+	 */
+	public function executeRequest(IRequestContext &$context, Controller &$controller, $method, array $args = array()) {
+		if ( !method_exists($controller, $method) ) {
+			throw new Exception\RouteException("Controller method \"". $method ."\" was not found in ". get_class($controller));
+		}
+
+		$result = call_user_func_array(array($controller, $method), $args);
 	}
 	
 	/**
@@ -134,13 +150,31 @@ class Application extends Utility\ConfigurableSingleton
 	 * @return object			An instance of the URL class.
 	 */
 	public function getRequestedURL() {
-		/* First construct the complete URL string from server variables. */
-		$urlString = ((!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] != "off") ? "https" : "http")
+		if ( php_sapi_name() == 'cli' || defined('STDIN') ) {
+			$args = array_slice($_SERVER['argv'], 1);
+			$urlString = "console://cli" . ($args ? '/' . implode('/', $args) : '');
+		}
+		else {
+			/* First construct the complete URL string from server variables. */
+			$urlString = ((!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] != "off") ? "https" : "http")
 					 ."://". $_SERVER["HTTP_HOST"] .":". $_SERVER["SERVER_PORT"] . $_SERVER["REQUEST_URI"];
-		
-		/* Pass it to the URI class to parse it. */
+		}
+
+		/* Pass it to the URI class to parse it. */	
 		$uri = new Utility\URL($urlString);
 		return $uri;
+	}
+
+	/**
+	 * Proxy for the OperationContext::getCurrent method which establishes the
+	 * current operation's context by inspecting certain server variables and
+	 * defines.
+	 *
+	 * @access public
+	 * @return OperationContext A OperationContext-derived object instance
+	 */
+	public function getOperationContext() {
+		return Context\OperationContext::getCurrent();
 	}
 
 	/**
@@ -282,7 +316,7 @@ class Application extends Utility\ConfigurableSingleton
 	 */
 	private function autoload($name) {
 		foreach ( $this->al_directories as $directory => $fileTemplate ) {
-			$name = basename($name);
+			$name = basename(str_replace("\\", "//", $name));
 			$filename = $directory ."/". str_replace("{0}", strtolower($name), $fileTemplate);
 			if ( file_exists($filename) ) {
 				require_once $filename;
@@ -310,6 +344,34 @@ class Application extends Utility\ConfigurableSingleton
 			return new $el();
 		}, $modules);
 		$this->iocContainer = new Ioc\IocContainer($modules);
+	}
+
+	/**
+	 * Creates the Router instance that will translate requests into controller
+	 * method calls.
+	 *
+	 * @access private
+	 * @return void
+	 */
+	private function createRouter() {
+		$this->router = new Router($this);
+
+		// Set configured defaults if they've been set
+		if ( ($defaultController = $this->config("Cannoli.Application.Routing", "defaultController", "")) != "" ) {
+			$this->router->setDefaultController($defaultController);
+		}
+		if ( ($defaultMethod = $this->config("Cannoli.Application.Routing", "defaultMethod", "")) != "" ) {
+			$this->router->setDefaultMethod($defaultMethod);
+		}
+
+		// Add configured routes to the router
+		$routes = $this->config("Cannoli.Application.Routing", "routes", array());
+		foreach ( $routes as $route ) {
+			if ( !is_array($route) || count($route) != 2 ) {
+				throw new Exception\RouteException("Invalid route configured in Cannoli.Application.Routing::routes, routes should be arrays with 2 elements each.");
+			}
+			$this->router->addRoute($route[0], $route[1]);
+		}
 	}
 
 	/**
@@ -378,14 +440,18 @@ class Application extends Utility\ConfigurableSingleton
 		$pm->onBeforeRouting();
 	}
 
-	private function OnAfterRouting(Core\IRenderable &$renderable) {
+	private function OnAfterRouting() {
 		// System updates/code first
 
 		// Notify plugins next
 		$pm = &$this->getPluginManager();
-		$newRenderable = $pm->onAfterRouting($renderable);
+		$newRenderable = $pm->onAfterRouting();
 
 		return $newRenderable;
+	}
+
+	private function OnBeforeRendering(Core\IRenderable &$renderable) {
+
 	}
 
 	/**

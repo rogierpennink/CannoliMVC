@@ -1,7 +1,7 @@
 <?php
 namespace Cannoli\Framework\Core;
 
-interface IConfiguration extends \ArrayAccess
+interface IConfiguration extends \ArrayAccess, \Iterator
 {
 	const ACL_PRIVATE	= "private";
 

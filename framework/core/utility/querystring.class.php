@@ -22,14 +22,8 @@ class QueryString
 		}
 		
 		/* Url decode. */
-		$queryString = urldecode($queryString);
-		
-		/* Split by ampersands */
-		$keyValuePairs = explode("&", $queryString);
-		foreach ( $keyValuePairs as $keyValuePair ) {
-			$keyValuePair = explode("=", $keyValuePair);
-			$this->set($keyValuePair[0], $keyValuePair[1]);
-		}
+		$queryString = rawurldecode($queryString);
+		parse_str($queryString, $this->data);
 		
 		$this->valid = true;
 	}

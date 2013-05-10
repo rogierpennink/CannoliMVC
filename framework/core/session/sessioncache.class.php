@@ -38,15 +38,33 @@ class SessionCache implements Core\ICache
 	}
 	
 	public function flush() {
+		if ( ini_get("session.use_cookies") ) {
+			// Also remove session cookie
+			$params = session_get_cookie_params();
+			setcookie($this->session_name, $this->session_id, 1, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+		}
+
+		// Kill all session data
+		$_SESSION = array();
 		session_destroy();
+
+		// Make session data available for use again
+		session_start();
 	}
 		
-	public function getSessionID() {
+	public function getSessionId() {
 		return $this->session_id;
 	}
 	
 	public function getSessionName() {
 		return $this->session_name;
+	}
+
+	public function setSessionId($id) {
+		if ( $id != $this->session_id ) {
+			session_id($id);
+			$this->session_id = $id;
+		}
 	}
 }
 ?>

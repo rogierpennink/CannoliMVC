@@ -164,26 +164,15 @@ class PluginManager extends Utility\ConfigurableClass
 
 	/**
 	 * Notifies registered plugins that the onAfterRouting phase has
-	 * been reached. Plugins can return a different IRenderable if they so desire.
+	 * been reached.
 	 *
 	 * @access public
-	 * @param IRenderable 			The renderable object that routing always results in
-	 * @return IRenderable			
+	 * @return void
 	 */
-	public function onAfterRouting(Core\IRenderable &$renderable) {
-		$viewCollection = new View\ViewCollection();
-
+	public function onAfterRouting() {
 		foreach ( $this->getInstantiablePlugins() as $pluginContainer ) {
-			$newRenderable = $pluginContainer->trigger("onAfterRouting", array($renderable));
-			if ( !($newRenderable instanceof Core\IRenderable) ) {
-				throw new \UnexpectedValueException("Return value for onAfterRouting on plugin: \"{$pluginContainer->getId()}\" must be of type IRenderable.");
-			}
-			$viewCollection->add($newRenderable);
+			$pluginContainer->trigger("onAfterRouting");
 		}
-		
-		// If there are no plugins we still need to render the original renderable
-		if ( $viewCollection->count() == 0 ) return $renderable;
-		return $viewCollection;
 	}
 
 	/**
@@ -368,14 +357,19 @@ class PluginManager extends Utility\ConfigurableClass
 
 		// Add a closure as argument to the scope method, to throw an exception if after
 		// instantiation it appears that the wrong configuration domains are exposed
-		$args = array(function($instance) use($contract) {
+		// NOTE: we have to expose these variables the way we are because 5.3.6 and lower
+		// do not allow access to $this from the closure. We also cannot proxy $this through
+		// a different variable because it won't allow calls to private methods.
+		$app = $this->app;
+		$requiredDomains = $this->getRequiredConfigurationDomainsForContract($contract);
+		$args = array(function($instance) use($app, $requiredDomains, $contract) {
 			if ( !($instance instanceof PluginContractDeclaration) ) {
 				// This should never happen
 				throw new Exception\Plugin\PluginDeclarationInstantiationException("Plugin declaration instance was constructed but does not inherit from PluginContractDeclaration.");
 			}
 
 			$exposedDomains = $instance->getConfigurationDomains();
-			$requiredDomains = $this->getRequiredConfigurationDomainsForContract($contract);
+			
 			if ( !empty($requiredDomains) ) {
 				if ( count(array_intersect($exposedDomains, $requiredDomains)) != count($requiredDomains) ) {
 					throw new Exception\Plugin\PluginDeclarationInstantiationException("Plugin declaration instance for contract ($contract) does not expose required configuration domains.");
@@ -383,7 +377,7 @@ class PluginManager extends Utility\ConfigurableClass
 			}
 		});
 		
-		$bindingScope =& $this->app->getIocContainer()->bind($namespacedContract)->to($declarationClsName);
+		$bindingScope =& $app->getIocContainer()->bind($namespacedContract)->to($declarationClsName);
 		call_user_func_array(array($bindingScope, $scopeMethod), $args);
 	}
 

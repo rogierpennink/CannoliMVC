@@ -24,7 +24,7 @@ class CannoliDCM extends Plugin\PluginContractDeclaration implements Contract\Da
 
 	private $isInitialized = false;
 
-	public function injectDatabaseConnectionFactory(Contract\Database\IDatabaseConnectionFactory &$factory) {
+	public function _injectDatabaseConnectionFactory(Contract\Database\IDatabaseConnectionFactory &$factory) {
 		$this->databaseConnectionFactory = $factory;
 	}
 

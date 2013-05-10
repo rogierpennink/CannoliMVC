@@ -155,7 +155,7 @@ class IocContainer extends NamespaceContainer
 			// We don't look at the rest of the method name at all; the only restriction is
 			// that it starts with "inject". This means that one injection method can accept
 			// multiple dependencies. So type hinting is absolutely required for injection methods.
-			if ( substr($method->getName(), 0, 6) == "inject" ) {
+			if ( substr($method->getName(), 0, 7) == "_inject" ) {
 				// Get parameters
 				$params = $method->getParameters();
 				$paramslist = array();

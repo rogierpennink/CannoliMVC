@@ -181,6 +181,32 @@ class ConfigurationContainer implements Core\IConfiguration
     	return $this->get($key);
     }
 
+    /////////////////////////////////////
+    ////// ITERATOR IMPLEMENTATION //////
+    /////////////////////////////////////
+
+    public function rewind() {
+        reset($this->settings);
+    }
+
+    public function current() {
+        return current($this->settings);
+    }
+
+    public function key() {
+        return key($this->settings);
+    }
+
+    public function next() {
+		if ( !$this->valid() ) 
+      		throw new \NoSuchElementException('at end of array');
+        next($this->settings);
+    }
+
+    public function valid() {
+        return current($this->settings) !== false;
+    }
+
     /**
      * Parses a configuration section and sets the internal state of this configuration
      * container object as appropriate.

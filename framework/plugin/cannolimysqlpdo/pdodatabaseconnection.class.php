@@ -222,9 +222,47 @@ abstract class PDODatabaseConnection implements Contract\Database\IDatabaseConne
 			array_shift($args);
 		}
 
+
 		$resultSet = $this->createResultSetFromQuery($sql, $args);
 		$resultSet->execute();
 		return $resultSet;
+	}
+
+	/**
+	 * Constructs a SELECT query based on the input parameters.
+	 *
+	 * @access public
+	 * @param $table 		The name of the table to construct the query for
+	 * @param $conditions 	The where clause; associative: key = field name, value = value
+	 * @param $ordering 	The order by clause; associative: key = field name, value = ASC/DESC
+	 * @param $limitFrom 	The limit clause, this is the offset
+	 * @param $limitAmount 	The amount of items to take
+	 * @return IResultSet	
+	 */
+	public function select($table, array $conditions = array(), array $ordering = array(), $limitFrom = 0, $limitAmount = 0) {
+		// Construct $sql and arguments array
+		$sql = "SELECT * FROM `". $table ."`";
+		$args = array();
+
+		if ( count($conditions) > 0 ) {
+			$sql .= " WHERE "; $where = "";
+			foreach ( $conditions as $field => $value ) $where .= "AND `". $field ."` = ?";
+			$sql .= substr($where, 4);
+			$args = array_merge($args, array_values($conditions));
+		}
+
+		if ( count($ordering) > 0 ) {
+			$sql .= " ORDER BY "; $order = "";
+			foreach ( $ordering as $field => $order ) $order .= ", `". $field ."` ". $order;
+			$sql .= substr($order, 2);
+		}
+
+		if ( $limitFrom > 0 || $limitAmount > 0 ) {
+			$sql .= " LIMIT ?,?";
+			$args = array_merge($args, array($limitFrom, $limitAmount));
+		}
+
+		return call_user_func_array(array($this, "query"), array_merge(array($sql), $args));
 	}
 
 	/**

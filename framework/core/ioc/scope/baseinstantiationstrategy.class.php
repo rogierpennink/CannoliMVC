@@ -9,8 +9,6 @@ abstract class BaseInstantiationStrategy implements IInstantiationStrategy
 		$this->closure = $closure;
 	}
 
-	abstract public function instantiate(\ReflectionClass &$rc, array $constructorArguments);
-
 	protected function onNewInstanceCreated($instance) {
 		if ( !is_null($this->closure) ) {
 			$closure = $this->closure;

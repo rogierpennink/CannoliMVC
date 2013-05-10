@@ -9,16 +9,24 @@ if ( defined('STDIN') ) {
 	chdir(dirname(__FILE__));
 }
 
+/* Define important CMVC folder paths relative to the index.php file here */
+$path_system 		= "framework";
+$path_application 	= "application";
+
 /**
  * Define path variables. 
  */
-define('PATH_SYSTEM', 'framework');
+if ( realpath($path_system) !== false ) {
+	DEFINE('PATH_SYSTEM', str_replace("\\", "/", realpath($path_system)) .'/');
+}
 
-define('PATH_CONFIG', PATH_SYSTEM."/config");
+if ( realpath($path_application) !== false ) {
+	DEFINE('PATH_APPLICATION', str_replace("\\", "/", realpath($path_application)) .'/');
+}
 
-define('FILE_CONFIG', PATH_CONFIG."/framework.conf");
+define('PATH_CONFIG', PATH_SYSTEM."config/");
 
-define('PATH_APPLICATION', 'application');
+define('FILE_CONFIG', PATH_CONFIG."framework.conf");
 
 require_once "framework/application.class.php";
 

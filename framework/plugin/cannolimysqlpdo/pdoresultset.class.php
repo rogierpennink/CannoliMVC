@@ -42,8 +42,17 @@ class PDOResultSet implements Contract\Database\IResultSet
 	}
 
 	// Metadata
-	public function getRowCount() {}
-	public function insertedID() {}
+	public function getRowCount() {
+		if ( !$this->hasExecuted ) $this->execute();
+
+		return $this->stmt->rowCount();
+	}
+
+	public function insertedID() {
+		if ( !$this->hasExecuted ) $this->execute();
+
+		return $this->pdo->lastInsertId();
+	}
 
 	// Data fetch
 	public function fetchObject() {
