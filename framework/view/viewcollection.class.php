@@ -1,6 +1,8 @@
 <?php
 namespace Cannoli\Framework\View;
 
+use Cannoli\Framework\Core\IRenderable;
+
 /**
  * ViewCollection class
  *
