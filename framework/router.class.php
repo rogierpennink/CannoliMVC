@@ -86,14 +86,7 @@ class Router
 
 		$context = $this->app->getOperationContext();
 
-		/* Get the path from the url and check if a route has been defined for it. */
-		if ( $this->hasRoute($url->getPath()) ) {
-			$segments = explode("/", $this->getRoutedPath($url->getPath()));
-		}
-		else {
-			/* No route defined, get segments from the requested URL. */
-			$segments = $this->getSegmentsFromContext($context);
-		}
+		$segments = $this->getSegmentsFromContext($context);
 		
 		// TODO: Take subdirectories into account here
 		$strController = trim(empty($segments) ? $this->defaultController : $segments[0]);
@@ -187,6 +180,12 @@ class Router
 			// mvc is installed in a subdirectory or if the url is of the format:
 			// index.php/segments/here
 			$path = $context->getRequestUrl()->getPath();
+
+			// If there is a route for the requested url, use it instead
+			if ( $this->hasRoute($path) ) {
+				return explode("/", $this->getRoutedPath($path));
+			}
+
 			if ( strpos($path, $_SERVER['SCRIPT_NAME']) === 0 ) {
 				$path = substr($path, strlen($_SERVER['SCRIPT_NAME']));
 			}
