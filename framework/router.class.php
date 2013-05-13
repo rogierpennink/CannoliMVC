@@ -57,18 +57,34 @@ class Router
 		$this->routes[$path] = $resource;
 	}
 
-	public function hasRoute($path) {
-		$path = trim($path, "/");
+	// public function hasRoute($path) {
+	// 	$path = trim($path, "/");
 
-		return isset($this->routes[$path]);
-	}
+	// 	 Get array keys and walk through them to test any and all
+	// 	   regular expressions against the current path. 
+	// 	$keys = array_keys($this->routes);
+	// 	foreach ( $keys as $key ) {
+	// 		if ( preg_match())
+	// 	}
+
+	// 	return isset($this->routes[$path]);
+	// }
 
 	public function getRoutedPath($path) {
-		if ( !$this->hasRoute($path) ) return $path;
-
 		$path = trim($path, "/");
 
-		return $this->routes[$path];
+		/* Get array keys and walk through them to test any and all
+		   regular expressions against the current path. */
+		foreach ( $this->routes as $key => $value ) {
+			if ( $key == $path ) return $value;
+			if ( preg_match("#^".$key."$#", $path) == 1 ) {
+				if ( ($routedPath = @preg_replace("#^".$key."$#", $value, $path)) == null )
+					continue;
+				return $routedPath;
+			}
+		}
+
+		return $path;
 	}
 
 	/**
@@ -181,17 +197,16 @@ class Router
 			// index.php/segments/here
 			$path = $context->getRequestUrl()->getPath();
 
-			// If there is a route for the requested url, use it instead
-			if ( $this->hasRoute($path) ) {
-				return explode("/", $this->getRoutedPath($path));
-			}
-
 			if ( strpos($path, $_SERVER['SCRIPT_NAME']) === 0 ) {
 				$path = substr($path, strlen($_SERVER['SCRIPT_NAME']));
 			}
 			elseif ( strpos($path, dirname($_SERVER['SCRIPT_NAME'])) === 0 ) {
 				$path = substr($path, strlen(dirname($_SERVER['SCRIPT_NAME'])));
 			}
+
+			// If there is a route for the requested url, this method will find it and apply it.
+			// If no route exists, $path will remain unaltered
+			$path = $this->getRoutedPath($path);
 
 			return explode("/", trim($path, "/"));
 		}
