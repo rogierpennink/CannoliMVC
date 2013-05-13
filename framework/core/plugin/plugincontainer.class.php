@@ -28,7 +28,9 @@ class PluginContainer
 		// An exception will have been thrown if something went wrong, so
 		// bind the classname to itself in singleton scope
 		if ( !is_null($this->getClass()) ) {
-			$app->getIocContainer()->bind($this->getClass())->to($this->getClass())->inSingletonScope();
+			if ( !$this->app->getIocContainer()->hasBindingWithTypeName($this->getClass()) ) {
+				$app->getIocContainer()->bind($this->getClass())->to($this->getClass())->inSingletonScope();
+			}
 		}
 	}
 
@@ -110,7 +112,7 @@ class PluginContainer
 	 */
 	public function getInstance() {
 		if ( $this->getClass() == null ) return;
-		return $this->app->getIocContainer()->get($this->getClass());
+		return $this->app->getIocContainer()->getInstance($this->getClass());
 		// $callable = array($this->getClass(), "getInstance");
 		// if ( ($instance = call_user_func($callable)) === false ) {
 		// 	throw new Exception\Plugin\PluginClassLoaderException("Failed call to \"". $this->getClass() ."::getInstance()\"");

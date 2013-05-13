@@ -26,14 +26,7 @@ class Plugin extends PluginBase
 	// Takes place before the request is processed by a controller
 	public function onBeforeRouting() {}
 
-	// Takes the Renderable object that was returned by the routing process.
-	// This is typically a view or a view collection.
-	// Returns the (un)modified renderable
-	// TODO: This is dumb, it shouldn't return renderables at all, or if it must,
-	// the system should be changed to replace the original renderable.
-	public function onAfterRouting(Core\IRenderable &$renderable) {
-		return $renderable;
-	}
+	public function onAfterRouting() {}
 
 	// Takes the Output (string, or output object) that is going to be sent
 	// before it is sent, this allows caching or modification of the output.

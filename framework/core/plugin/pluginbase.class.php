@@ -5,7 +5,7 @@ use Cannoli\Framework\Application,
 	Cannoli\Framework\Core,
 	Cannoli\Framework\Core\Utility;
 
-abstract class PluginBase extends Utility\ConfigurableSingleton
+abstract class PluginBase extends Utility\ConfigurableClass
 {
 	protected $app;
 
@@ -36,6 +36,8 @@ abstract class PluginBase extends Utility\ConfigurableSingleton
 	}
 
 	public function __construct(Application &$app) {
+		parent::__construct();
+
 		$this->app = $app;
 	}
 
@@ -51,7 +53,7 @@ abstract class PluginBase extends Utility\ConfigurableSingleton
 	// Takes the Renderable object that was returned by the routing process.
 	// This is typically a view or a view collection.
 	// Returns the (un)modified renderable
-	abstract public function onAfterRouting(Core\IRenderable &$renderable);
+	abstract public function onAfterRouting();
 
 	// Takes the Output (string, or output object) that is going to be sent
 	// before it is sent, this allows caching or modification of the output.
