@@ -1,7 +1,7 @@
 <?php
 namespace Cannoli\Framework\Core\Exception\Database;
 
-class DatabaseResultSetException extends \Exception
+class DatabaseResultSetException extends DatabaseException
 {
 	public function __construct($message) {
 		parent::__construct($message);

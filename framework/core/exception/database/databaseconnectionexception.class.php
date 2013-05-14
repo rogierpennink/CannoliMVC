@@ -1,7 +1,7 @@
 <?php
 namespace Cannoli\Framework\Core\Exception\Database;
 
-class DatabaseConnectionException extends \Exception
+class DatabaseConnectionException extends DatabaseException
 {
 	private $host;
 

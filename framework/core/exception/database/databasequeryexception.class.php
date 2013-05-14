@@ -1,7 +1,7 @@
 <?php
 namespace Cannoli\Framework\Core\Exception\Database;
 
-class DatabaseQueryException extends \Exception
+class DatabaseQueryException extends DatabaseException
 {
 	private $sql;
 
