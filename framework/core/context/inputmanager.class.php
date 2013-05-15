@@ -59,5 +59,45 @@ class InputManager extends Utility\Singleton implements IInputManager
 	public function offsetUnset($offset) {
 		unset($this->data[$offset]);
 	}
+
+	/**
+	 * @access public
+	 * @return void
+	 */
+	public function rewind() {
+    	reset($this->data);
+    }
+
+    /**
+     * @access public
+     * @return mixed
+     */
+    public function current() {
+		return current($this->data);
+    }
+
+    /**
+     * @access public
+     * @return mixed
+     */
+    public function key() {
+		return key($this->data);
+    }
+
+    /**
+     * @access public
+     * @return mixed
+     */
+    public function next() {
+		return next($this->data);
+    }
+
+    /** 
+     * @access public
+     * @return boolean
+     */
+    public function valid() {
+		return $this->current() !== false;
+    }   
 }
 ?>

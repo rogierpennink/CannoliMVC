@@ -1,7 +1,7 @@
 <?php
 namespace Cannoli\Framework\Core\Context;
 
-interface IInputManager extends \ArrayAccess
+interface IInputManager extends \ArrayAccess, \Iterator
 {
 	function has($key);
 
