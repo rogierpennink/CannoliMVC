@@ -13,11 +13,15 @@ class HttpWebResponse extends Context\Response
 
 	private $contentType = "text/html";
 
-	public function __construct() {
+	private $version = "1.0";
+
+	public function __construct($version) {
+		$this->version = $version;
 	}
 
 	public function setStatusCode($statusCode) {
 		$this->statusCode = $statusCode;
+		header("HTTP/".$this->version." ".$this->statusCode." ".HttpStatus::getDescription($this->statusCode));
 	}
 
 	public function getStatusCode() {

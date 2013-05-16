@@ -113,7 +113,15 @@ class Application extends Utility\ConfigurableSingleton
 		// Onbeforerouting call should go here
 		$this->onBeforeRouting();
 
-		$renderable = $this->router->route();
+		// Catch http exceptions
+		try {
+			$renderable = $this->router->route();
+		}
+		catch ( Exception\Net\HttpException $e ) {
+			if ( $this->getOperationContext()->isHttpContext() ) {
+				$this->getOperationContext()->getResponse()->setStatusCode($e->getCode());
+			}
+		}
 
 		// OnAfterRouting call should go here
 		$this->onAfterRouting();

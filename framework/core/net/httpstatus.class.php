@@ -35,5 +35,61 @@ final class HttpStatus
 	const HTTP_VERSION_NOT_SUPPORTED	= 505;
 
 	private function __construct() {}
+
+	public static function getDescription($code) {
+		switch ( $code ) {
+			case self::OK:
+				return "OK";
+			case self::CREATED:
+				return "Created";
+			case self::ACCEPTED:
+				return "Accepted";
+			case self::NON_AUTHORITIVE_INFORMATION:
+				return "Non Authoritive Information";
+			case self::NO_CONTENT:
+				return "No Content";
+			case self::RESET_CONTENT:
+				return "Reset Content";
+			case self::PARTIAL_CONTENT:
+				return "Partial Content";
+
+			case self::BAD_REQUEST:
+				return "Bad Request";
+			case self::UNAUTHORIZED:
+				return "Unauthorized";
+			case self::PAYMENT_REQUIRED:
+				return "Payment Required";
+			case self::FORBIDDEN:
+				return "Forbidden";
+			case self::NOT_FOUND:
+				return "Not Found";
+			case self::METHOD_NOT_ALLOWED:
+				return "Method Not Allowed";
+			case self::NOT_ACCEPTABLE:
+				return "Not Acceptable";
+			case self::PROXY_AUTH_REQUIRED:
+				return "Proxy Auth Required";
+			case self::REQUEST_TIMEOUT:
+				return "Request Timeout";
+			case self::CONFLICT:
+				return "Conflict";
+			case self::LENGTH_REQUIRED:
+				return "Length Required";
+
+			case self::INTERNAL_SERVER_ERROR:
+				return "Internal Server Error";
+			case self::NOT_IMPLEMENTED:
+				return "Not Implemented";
+			case self::BAD_GATEWAY:
+				return "Bad Gateway";
+			case self::SERVICE_UNAVAILABLE:
+				return "Service Unavailable";
+			case self::GATEWAY_TIMEOUT:
+				return "Gateway Timeout";
+			case self::HTTP_VERSION_NOT_SUPPORTED:
+				return "Http Version Not Supported";
+		}
+		return "";
+	}
 }
 ?>

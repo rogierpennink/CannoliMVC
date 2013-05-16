@@ -37,10 +37,16 @@ class HttpWebRequest
 			$webRequest = new HttpWebRequest();
 
 			// Get HTTP_ server variables for headers
-			foreach ( $_SERVER as $key => $value ) {
-				if ( substr($key, 0, 5) == "HTTP_" ) {
-					$webRequest->setHeader(self::transformPhpHeaderName($key), $value);
+			if ( !function_exists('getallheaders') ) {
+				foreach ( $_SERVER as $key => $value ) {
+					if ( substr($key, 0, 5) == "HTTP_" ) {
+						$webRequest->setHeader(self::transformPhpHeaderName($key), $value);
+					}
 				}
+			}
+			else {
+				foreach ( getallheaders() as $key => $value )
+					$webRequest->setHeader(self::transformPhpHeaderName($key), $value);
 			}
 
 			$webRequest->verb = strtoupper($_SERVER['REQUEST_METHOD']);

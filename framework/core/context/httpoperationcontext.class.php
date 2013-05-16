@@ -10,9 +10,10 @@ class HttpOperationContext extends OperationContext
 
 	public static function getCurrent() {
 		if ( empty(self::$current) ) {
-			self::$current = new HttpOperationContext(Net\HttpWebRequest::getCurrent(),
-														HttpInputManager::getInstance(),
-														new Net\HttpWebResponse());
+			$request = Net\HttpWebRequest::getCurrent();
+			self::$current = new HttpOperationContext($request,
+													  HttpInputManager::getInstance(),
+													  new Net\HttpWebResponse($request->getProtocolVersion()));
 		}
 
 		return self::$current;
