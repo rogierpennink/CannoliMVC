@@ -4,6 +4,7 @@ namespace Cannoli\Framework\Controller;
 use Cannoli\Framework\Application,
 	Cannoli\Framework\Core\Exception\Net\HttpException,
 	Cannoli\Framework\Core\Context,
+	Cannoli\Framework\Core\Net,
 	Cannoli\Framework\View;
 
 class Controller

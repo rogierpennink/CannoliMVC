@@ -246,8 +246,8 @@ abstract class PDODatabaseConnection implements Contract\Database\IDatabaseConne
 
 		if ( count($conditions) > 0 ) {
 			$sql .= " WHERE "; $where = "";
-			foreach ( $conditions as $field => $value ) $where .= "AND `". $field ."` = ?";
-			$sql .= substr($where, 4);
+			foreach ( $conditions as $field => $value ) $where .= " AND `". $field ."` = ?";
+			$sql .= substr($where, 5);
 			$args = array_merge($args, array_values($conditions));
 		}
 

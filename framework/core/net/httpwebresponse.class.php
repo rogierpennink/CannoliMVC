@@ -1,7 +1,9 @@
 <?php
 namespace Cannoli\Framework\Core\Net;
 
+use Cannoli\Framework\Core;
 use Cannoli\Framework\Core\Context;
+use Cannoli\Framework\View\JsonView;
 
 class HttpWebResponse extends Context\Response
 {
@@ -19,6 +21,18 @@ class HttpWebResponse extends Context\Response
 		$this->version = $version;
 	}
 
+	/**
+	 * Overwriting the setResponseBody method allows us to set the content
+	 * type header properly.
+	 */
+	public function setResponseBody(Core\IRenderable $body) {
+		parent::setResponseBody($body);
+		if ( $body instanceof JsonView ) {
+			// TODO: this is waaaayyyy too hardcoded for my liking
+			$this->setHeader("Content-Type", "application/json; charset=utf-8");
+		}
+	}
+
 	public function setStatusCode($statusCode) {
 		$this->statusCode = $statusCode;
 		header("HTTP/".$this->version." ".$this->statusCode." ".HttpStatus::getDescription($this->statusCode));
@@ -30,10 +44,12 @@ class HttpWebResponse extends Context\Response
 
 	public function addHeader($header, $value) {
 		$this->headers[$header][] = $value;
+		header(trim($header, ":") .": ". $value, false);
 	}
 
 	public function setHeader($header, $value) {
 		$this->headers[$header] = array($value);
+		header(trim($header, ":") .": ". $value);
 	}
 
 	public function setCharset($charset) {
