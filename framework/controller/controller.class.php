@@ -75,6 +75,7 @@ class Controller
 	 * @throws HttpException
 	 */
 	protected function _acceptMethods(array $methods) {
+		if ( !$this->context->isHttpContext() ) return;
 		if ( !in_array($this->request->getVerb(), $methods) ) {
 			throw new HttpException("Only the following methods are allowed: ". implode(", ", $methods), Net\HttpStatus::METHOD_NOT_ALLOWED);
 		}
