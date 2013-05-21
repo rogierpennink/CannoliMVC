@@ -198,8 +198,9 @@ class PDOResultSet implements Contract\Database\IResultSet
 			if ( is_bool($value) ) $dataType = \PDO::PARAM_BOOL;
 			if ( is_null($value) ) $dataType = \PDO::PARAM_NULL;
 
-			if ( is_numeric($key) )
+			if ( is_numeric($key) ) {
 				$this->stmt->bindValue($numCount++, $value, $dataType);
+			}
 			else
 				$this->stmt->bindValue($key, $value, $dataType);
 		}

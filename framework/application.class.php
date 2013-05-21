@@ -13,7 +13,6 @@ require_once dirname(__FILE__) ."/router.class.php";
 require_once dirname(__FILE__) ."/core/cache/appsettings.class.php";
 
 use Cannoli\Framework\Core,
-	Cannoli\Framework\Core\Cache\AppSettings,
 	Cannoli\Framework\Core\Configuration,
 	Cannoli\Framework\Core\Context,
 	Cannoli\Framework\Core\Exception,

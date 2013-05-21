@@ -57,7 +57,12 @@ class HttpWebRequest
 			$webRequest->protocolVersion = $protocolAndVersion[1];
 
 			// Get resource
-			$webRequest->resource = $_SERVER["REQUEST_URI"];
+			$resource = $_SERVER["REQUEST_URI"];
+			// Cut the query string from the resource
+			if ( ($pos = strpos($resource, "?")) !== false) {
+				$resource = substr($resource, 0, $pos);
+			}
+			$webRequest->resource = $resource;
 
 			// Read raw request body from php://input (ignore errors)
 			$body = @file_get_contents("php://input");
