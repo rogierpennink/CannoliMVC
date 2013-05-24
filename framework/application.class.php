@@ -19,6 +19,7 @@ use Cannoli\Framework\Core,
 	Cannoli\Framework\Core\Ioc,
 	Cannoli\Framework\Core\Ioc\Modules,
 	Cannoli\Framework\Core\Plugin,
+	Cannoli\Framework\Core\Cache\AppSettings,
 	Cannoli\Framework\Core\Utility;
 
 class Application extends Utility\ConfigurableSingleton
