@@ -12,22 +12,7 @@ class JsonView extends Renderable
 	
 	public function __construct($parameters = array()) {
 		$this->clear();
-		// TODO: check if we can't simply json_encode/decode rather than
-		// manually checking the type of $parameters and undertaking different actions
-		// based on that information
-		if ( is_array($parameters) ) {
-			$this->parameters = $parameters;
-		}
-		else {
-			if ( is_object($parameters) ) {
-				$vars = get_object_vars($parameters);
-				$parameters = array();
-				foreach ( $vars as $key => $var ) {
-					$parameters[$key] = $var;
-				}
-				$this->parameters = $parameters;
-			}
-		}
+		$this->parameters = $parameters;
 	}
 	
 	public function setTemplate($template) {
