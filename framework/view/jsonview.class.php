@@ -52,12 +52,7 @@ class JsonView extends Renderable
 		/* Start output buffering so we can grab the generated output in a string. */
 		ob_start();
 		
-		$data = array();
-		foreach ( $this->parameters as $key => $value ) {
-			$data[$key] = $value;
-		}
-
-		echo json_encode($data);
+		echo json_encode($this->parameters);
 		
 		/* Read the output buffer into a string and return it. */
 		$output = ob_get_contents();
