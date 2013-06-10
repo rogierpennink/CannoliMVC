@@ -62,7 +62,9 @@ class SessionCache implements Core\ICache
 
 	public function setSessionId($id) {
 		if ( $id != $this->session_id ) {
+			session_write_close();
 			session_id($id);
+			session_start();
 			$this->session_id = $id;
 		}
 	}
