@@ -56,18 +56,16 @@ class EventQueue
 	}
 
 	/**
-	 * Takes an event from the internal queue and processes it
+	 * Takes an event from the internal queue and returns it
 	 *
 	 * @access public
-	 * @return void
+	 * @return mixed 				An IEvent instance or null if no events were found
 	 */
-	public function processNext() {
+	public function getNext() {
 		$event = $this->highPriorityQueue->hasMore() ? $this->highPriorityQueue->dequeue() :
 				 ($this->normalPriorityQueue->hasMore() ? $this->normalPriorityQueue->dequeue() :
 				  ($this->lowPriorityQueue->hasMore() ? $this->lowPriorityQueue->dequeue() : null));
-		if ( !is_null($event) ) {
-			// TODO: Process
-		}
+		return $event;
 	}
 
 	/**

@@ -30,6 +30,8 @@ class Application extends Utility\ConfigurableSingleton
 	protected $router;
 
 	protected $iocContainer;
+
+	protected $eventQueue;
 	
 	private $al_directories = array();
 	
@@ -50,6 +52,9 @@ class Application extends Utility\ConfigurableSingleton
 		// Next, we should add all the required autoload directories that
 		// are needed for 'boot'
 		$this->addSystemAutoloadPaths();
+
+		// Initialize the system event queue
+		$this->eventQueue = new Core\Event\EventQueue();
 
 		// Initialize configuration manager and register this class as a configurable
 		$cm =& $this->getConfigurationManager();
