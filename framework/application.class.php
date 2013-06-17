@@ -135,6 +135,9 @@ class Application extends Utility\ConfigurableSingleton
 		}
 		catch ( \Exception $e ) {
 			$result = $route->getController()->_getExceptionHandler()->handleException($e);
+			if ( $result instanceof Core\IRenderable ) {
+				$this->getOperationContext()->getResponse()->setResponseBody($result);
+			}
 		}
 
 		// OnAfterRouting call should go here
