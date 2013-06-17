@@ -12,6 +12,9 @@ final class HttpStatus
 	const RESET_CONTENT 				= 205;
 	const PARTIAL_CONTENT 				= 206;
 
+	// 
+	const NOT_MODIFIED 					= 304;
+
 	// Status client error range
 	const BAD_REQUEST 					= 400;
 	const UNAUTHORIZED 					= 401;
