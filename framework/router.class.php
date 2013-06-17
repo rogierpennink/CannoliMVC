@@ -4,7 +4,9 @@ namespace Cannoli\Framework;
 use Application\Controller,
 	Cannoli\Framework\Controller\Controller as BaseController,
 	Cannoli\Framework\Core\Context,
-	Cannoli\Framework\Core\Exception;
+	Cannoli\Framework\Core\Exception,
+	Cannoli\Framework\Core\Routing\RouteContext,
+	Cannoli\Framework\Core\Routing\RouteData;
 
 class Router
 {
@@ -97,9 +99,6 @@ class Router
 	 * @throws RouteException
 	 */
 	public function route() {
-		/* Get the requested URL from $app */
-		$url = $this->app->getRequestedURL();
-
 		$context = $this->app->getOperationContext();
 
 		$segments = $this->getSegmentsFromContext($context);
@@ -179,6 +178,14 @@ class Router
 			return call_user_func_array(array($controller, $strMethod), array_splice($segments, 2));
 		}
 		return $controller->{$strMethod}();
+	}
+
+	private function createRouteContext($controller, $action) {
+		// Create route data
+		$routeData = new RouteData($controller, $action);
+
+		// Create new route context
+		$routeContext = new RouteContext($routeData, $this->app->getOperationContext()->getRequestUrl());
 	}
 
 	/**
