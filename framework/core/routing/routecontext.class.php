@@ -5,7 +5,7 @@ use Cannoli\Framework\Core\Context;
 
 class RouteContext
 {
-	public function __construct(RouteData $routeData, OperationContext &$operationContext) {
+	public function __construct(RouteData $routeData, Context\OperationContext $operationContext) {
 		$this->routeData = $routeData;
 		$this->operationContext = $operationContext;
 	}

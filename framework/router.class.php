@@ -135,7 +135,7 @@ class Router
 				throw new Exception\RouteException("No Controller could be found, check your configuration!");
 			}
 
-			return $controller->_http_404();
+			return $this->createRouteContext($controller, "_http_404");
 		}
 		
 		/**
@@ -153,39 +153,49 @@ class Router
 			/* Check for the presence of the default method. */
 			if ( !method_exists($controller, $this->defaultMethod) ) {
 				if ( method_exists($controller, "index") )
-					return $controller->index();
+					return $this->createRouteContext($controller, "index");
 				else
-					return $controller->_http_404();
+					return $this->createRouteContext($controller, "_http_404()");
 			}
 			
-			return $controller->{$this->defaultMethod}();
+			return $this->createRouteContext($controller, $this->defaultMethod);
 		}
 		else {
 			/* Check if we can run the requested method on the controller. */
 			if ( !method_exists($controller, $strMethod) ) {
 				/* Since we know we have a Controller-derived instance, call the 404 method */
-				return $controller->_http_404();
+				return $this->createRouteContext($controller, "_http_404");
 			}
 		}
 
 		/* If the method name starts with an underscore, it must not be associated with a URL. */
 		if ( substr($strMethod, 0, 1) == "_" ) {
-			return $controller->_http_403();
+			return $this->createRouteContext($controller, "_http_403");
 		}
 		
 		/* No special cases have occurred, method must be valid, so call it. */
 		if ( count($segments) > 2 ) {
-			return call_user_func_array(array($controller, $strMethod), array_splice($segments, 2));
+			return $this->createRouteContext($controller, $strMethod, array_splice($segments, 2));
 		}
-		return $controller->{$strMethod}();
+		return $this->createRouteContext($controller, $strMethod);
 	}
 
-	private function createRouteContext($controller, $action) {
+	/** 
+	 * Creates a new RouteContext object based on the given controller and action.
+	 *
+	 * @access private
+	 * @param $controller 			The name of the controller
+	 * @param $action 				The resolved action name
+	 * @param $args 				The argument to be passed to the to-be-called method
+	 * @return RouteContext
+	 */
+	private function createRouteContext(BaseController &$controller, $action, array $args = array()) {
 		// Create route data
-		$routeData = new RouteData($controller, $action);
+		$routeData = new RouteData($controller, $action, $args);
+		$context = $this->app->getOperationContext();
 
-		// Create new route context
-		$routeContext = new RouteContext($routeData, $this->app->getOperationContext()->getRequestUrl());
+		// Create and return new route context
+		return new RouteContext($routeData, $context);
 	}
 
 	/**
@@ -234,9 +244,7 @@ class Router
 		if ( class_exists($strController) ) {
 			//$controller = new $strController($this->app);
 			$controller = $this->app->getIocContainer()->getInstance($strController);
-			// This is where application-level initialization should occur
-			$controller->_initialize();
-			
+						
 			/* Check that the controller is an instance of Controller. */
 			if ( !($controller instanceof BaseController) )
 				throw new Exception\RouteException("The requested \"$strController\" exists but does not inherit from Controller.");

@@ -53,9 +53,6 @@ class Application extends Utility\ConfigurableSingleton
 		// are needed for 'boot'
 		$this->addSystemAutoloadPaths();
 
-		// Initialize the system event queue
-		$this->eventQueue = new Core\Event\EventQueue();
-
 		// Initialize configuration manager and register this class as a configurable
 		$cm =& $this->getConfigurationManager();
 		$cm->registerConfigurable($this);
@@ -65,6 +62,9 @@ class Application extends Utility\ConfigurableSingleton
 
 		// Load the framework configuration
 		$this->loadConfiguration();
+
+		// Initialize the system event queue
+		$this->eventQueue = new Core\Event\EventQueue();
 		
 		// TODO:
 		// Quick hack; session cache should probably be a member of the http
@@ -119,14 +119,22 @@ class Application extends Utility\ConfigurableSingleton
 		// Onbeforerouting call should go here
 		$this->onBeforeRouting();
 
-		// Catch http exceptions
+		// Do routing
+		$routeContext = $this->router->route();
+		$route = $routeContext->routeData;
+
+		// Catch http exceptions upon execution of the resolved controller/action pair
 		try {
-			$renderable = $this->router->route();
+			// This is where application-level initialization should occur
+			$route->getController()->_initialize();
+
+			// TODO: the actual execution of the controller method should probably
+			// be delegated to some other class so that applications can possibly
+			// hook into it
+			$renderable = call_user_func_array(array($route->getController(), $route->getAction()), $route->getArgs());
 		}
-		catch ( Exception\Net\HttpException $e ) {
-			if ( $this->getOperationContext()->isHttpContext() ) {
-				$this->getOperationContext()->getResponse()->setStatusCode($e->getCode());
-			}
+		catch ( \Exception $e ) {
+			$result = $route->getController()->_getExceptionHandler()->handleException($e);
 		}
 
 		// OnAfterRouting call should go here
