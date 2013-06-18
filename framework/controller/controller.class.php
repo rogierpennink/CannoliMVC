@@ -6,6 +6,7 @@ use Cannoli\Framework\Application,
 	Cannoli\Framework\Core\Context,
 	Cannoli\Framework\Core\Net,
 	Cannoli\Framework\Core\Net\DefaultHttpExceptionHandler,
+	Cannoli\Framework\Core\Routing\RouteContext,
 	Cannoli\Framework\View;
 
 class Controller
@@ -39,7 +40,7 @@ class Controller
 	public function _initialize() {
 	}
 
-	public function _getExceptionHandler() {
+	public function _getExceptionHandler(RouteContext $routeContext) {
 		return new DefaultHttpExceptionHandler($this->app);
 	}
 
