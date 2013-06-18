@@ -1,5 +1,5 @@
 <?php
-namespace Cannoli\Framework\Core\Exception;
+namespace Cannoli\Framework\Core\Exception\Net;
 
 use Cannoli\Framework\Core\Net;
 
