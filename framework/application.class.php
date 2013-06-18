@@ -134,7 +134,7 @@ class Application extends Utility\ConfigurableSingleton
 			$renderable = call_user_func_array(array($route->getController(), $route->getAction()), $route->getArgs());
 		}
 		catch ( \Exception $e ) {
-			$result = $route->getController()->_getExceptionHandler()->handleException($e);
+			$result = $route->getController()->_getExceptionHandler($routeContext)->handleException($e);
 			if ( $result instanceof Core\IRenderable ) {
 				$this->getOperationContext()->getResponse()->setResponseBody($result);
 			}
