@@ -22,12 +22,12 @@ class SessionCache implements Core\ICache
 		return isset($_SESSION[$key]);
 	}
 	
-	public function get($key) {
-		if ( !isset($_SESSION[$key]) ) return false;
+	public function get($key, $default = null) {
+		if ( !isset($_SESSION[$key]) ) return $default;
 		return unserialize($_SESSION[$key]);
 	}
 	
-	public function set($key, $value) {
+	public function set($key, $value, $ttl = 300) {
 		$_SESSION[$key] = serialize($value);
 	}
 	
