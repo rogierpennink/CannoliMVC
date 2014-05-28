@@ -19,13 +19,13 @@ class AppSettings extends Singleton implements ICache
 		return !empty($this->settings[$key]);
 	}
 	
-	public function get($key, $default = null) {
+	public function get($key) {
 		if ( $this->has($key) )
 			return $this->settings[$key];
-		return $default;
+		return null;
 	}
 	
-	public function set($key, $value, $ttl = 300) {
+	public function set($key, $value) {
 		$this->settings[$key] = $value;
 	}
 	

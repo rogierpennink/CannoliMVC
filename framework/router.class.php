@@ -229,8 +229,7 @@ class Router
 		}
 		elseif ( $context->isCliContext() ) {
 			$request = $context->getRequest();
-
-			return array_keys($request->getArguments());
+			return $request->getArguments();
 		}
 	}
 

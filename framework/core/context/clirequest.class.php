@@ -119,14 +119,15 @@ class CliRequest
 					$optionContext = false;
 				}
 
-				if ( ($pos = strpos($arg, '=')) !== false ) {
-					$key = substr($arg, 0, $pos);
-					$value = substr($arg, $pos + 1);
-					$this->args[$key] = $value;
-				}
-				else {
-					$this->args[$arg] = true;
-				}
+				$this->args[] = $arg;
+				// if ( ($pos = strpos($arg, '=')) !== false ) {
+				// 	$key = substr($arg, 0, $pos);
+				// 	$value = substr($arg, $pos + 1);
+				// 	$this->args[$key] = $value;
+				// }
+				// else {
+				// 	$this->args[] = $arg;
+				// }
 			}
 		}
 	}
